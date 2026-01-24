@@ -1,0 +1,14 @@
+{
+  "equipos": [
+    { "id": 1, "nombre": "Tigres" },
+    { "id": 2, "nombre": "Leones" },
+    { "id": 3, "nombre": "Panteras" },
+    { "id": 4, "nombre": "Chitas" }
+  ],
+  "partidos": [
+    { "id": 1, "fecha": "2026-01-24", "localId": 1, "visitanteId": 2, "golesLocal": null, "golesVisitante": null },
+    { "id": 2, "fecha": "2026-01-24", "localId": 3, "visitanteId": 4, "golesLocal": null, "golesVisitante": null },
+    { "id": 3, "fecha": "2026-01-31", "localId": 1, "visitanteId": 3, "golesLocal": null, "golesVisitante": null },
+    { "id": 4, "fecha": "2026-01-31", "localId": 2, "visitanteId": 4, "golesLocal": null, "golesVisitante": null }
+  ]
+}
