@@ -1,0 +1,292 @@
+/* =========================
+   Torneo de Dante — Tema Galaxia Minimal
+   ========================= */
+
+/* 1) Variables del tema */
+:root{
+  --bg0: #070815;
+  --bg1: #0b0f27;
+  --card: rgba(255,255,255,.06);
+  --card2: rgba(255,255,255,.08);
+  --border: rgba(255,255,255,.12);
+
+  --text: rgba(255,255,255,.92);
+  --muted: rgba(255,255,255,.70);
+
+  --accent: #7c5cff;    /* violeta */
+  --accent2: #2dd4bf;   /* verde agua */
+  --danger: #ff5c7a;
+
+  --shadow: 0 14px 40px rgba(0,0,0,.45);
+  --radius: 16px;
+}
+
+/* 2) Reset básico y tipografía */
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body{
+  margin: 0;
+  color: var(--text);
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans", "Helvetica Neue";
+  line-height: 1.35;
+
+  /* Fondo galáctico con gradientes */
+  background:
+    radial-gradient(1200px 800px at 20% 10%, rgba(124,92,255,.22), transparent 55%),
+    radial-gradient(900px 700px at 80% 20%, rgba(45,212,191,.18), transparent 55%),
+    radial-gradient(900px 700px at 50% 90%, rgba(255,92,122,.10), transparent 60%),
+    linear-gradient(180deg, var(--bg0), var(--bg1));
+  overflow-x: hidden;
+}
+
+/* 3) Estrellitas (sin imágenes) */
+body::before,
+body::after{
+  content:"";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+body::before{
+  opacity: .22;
+  background-image:
+    radial-gradient(1px 1px at 10% 20%, #fff, transparent),
+    radial-gradient(1px 1px at 40% 70%, #fff, transparent),
+    radial-gradient(1px 1px at 80% 30%, #fff, transparent),
+    radial-gradient(1px 1px at 60% 10%, #fff, transparent),
+    radial-gradient(1px 1px at 30% 40%, #fff, transparent),
+    radial-gradient(1px 1px at 70% 80%, #fff, transparent),
+    radial-gradient(1px 1px at 20% 85%, #fff, transparent),
+    radial-gradient(1px 1px at 90% 60%, #fff, transparent);
+  filter: blur(.2px);
+}
+
+body::after{
+  opacity: .12;
+  background-image:
+    radial-gradient(2px 2px at 15% 55%, #fff, transparent),
+    radial-gradient(2px 2px at 55% 25%, #fff, transparent),
+    radial-gradient(2px 2px at 85% 75%, #fff, transparent);
+  filter: blur(.6px);
+}
+
+/* 4) Contenedor principal */
+.app{
+  position: relative;
+  z-index: 1;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 28px 18px 70px;
+}
+
+/* 5) Header superior */
+.top{
+  display:flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+h1{
+  margin: 0 0 6px;
+  letter-spacing: .2px;
+  font-size: 34px;
+}
+
+h2{
+  margin: 22px 0 10px;
+  font-size: 18px;
+  letter-spacing: .2px;
+  color: rgba(255,255,255,.88);
+}
+
+/* Tu clase existente */
+.sectionTitle{
+  display:flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.muted{
+  color: var(--muted);
+  font-size: 13px;
+}
+
+/* 6) Tarjetas (glassmorphism leve) */
+.card{
+  background: linear-gradient(180deg, var(--card2), var(--card));
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(8px);
+}
+
+/* 7) Filas y responsive */
+.fila{
+  display:flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+label{
+  font-size: 13px;
+  color: rgba(255,255,255,.80);
+}
+
+/* 8) Inputs y selects */
+select, input, button{
+  font-size: 14px;
+  border-radius: 12px;
+}
+
+input, select{
+  padding: 10px 12px;
+  border: 1px solid rgba(255,255,255,.14);
+  background: rgba(0,0,0,.28);
+  color: var(--text);
+  outline: none;
+  transition: border-color .15s ease, transform .05s ease, background .15s ease;
+}
+
+input:focus, select:focus{
+  border-color: rgba(124,92,255,.55);
+  background: rgba(0,0,0,.34);
+}
+
+input[type="number"]{ width: 140px; }
+input[type="text"]{ width: 260px; }
+input[type="date"]{ width: 170px; }
+
+@media (max-width: 640px){
+  input[type="number"],
+  input[type="text"],
+  input[type="date"],
+  select{
+    width: 100%;
+  }
+}
+
+/* 9) Botones */
+button{
+  padding: 10px 12px;
+  border: 1px solid rgba(255,255,255,.18);
+  background: rgba(255,255,255,.06);
+  color: var(--text);
+  cursor: pointer;
+  transition: transform .06s ease, background .15s ease, border-color .15s ease;
+}
+
+button:hover{
+  background: rgba(255,255,255,.10);
+  border-color: rgba(255,255,255,.24);
+}
+
+button:active{
+  transform: translateY(1px);
+}
+
+/* Botones “especiales” por ID (sin cambiar HTML) */
+#btnGenerarLiga, #btnGenerarPlayoffs, #btnGuardarResultado, #btnSiguienteRonda{
+  border-color: rgba(124,92,255,.40);
+  background: linear-gradient(180deg, rgba(124,92,255,.18), rgba(124,92,255,.08));
+}
+
+#btnBorrarEquipos, #btnBorrarLiga, #btnBorrarPlayoffs, #btnResetTotal{
+  border-color: rgba(255,92,122,.35);
+  background: linear-gradient(180deg, rgba(255,92,122,.14), rgba(255,92,122,.06));
+}
+
+/* 10) Mensajes OK / Error */
+.ok{
+  color: var(--accent2);
+  font-weight: 700;
+}
+
+.error{
+  color: var(--danger);
+  font-weight: 700;
+}
+
+/* 11) Badges */
+.badge{
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.16);
+  background: rgba(255,255,255,.06);
+  margin-right: 6px;
+  margin-top: 6px;
+  font-weight: 650;
+  letter-spacing: .2px;
+}
+
+/* 12) Partidos (cards) */
+.partido{
+  padding: 12px 12px;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 14px;
+  margin: 10px 0;
+  background: rgba(0,0,0,.20);
+}
+
+.fecha{
+  font-size: 12.5px;
+  color: rgba(255,255,255,.70);
+}
+
+.marcador{
+  font-weight: 800;
+  margin-top: 6px;
+  font-size: 16px;
+  letter-spacing: .2px;
+}
+
+/* 13) Tablas */
+table{
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+  overflow: hidden;
+  border-radius: 14px;
+}
+
+th, td{
+  border-bottom: 1px solid rgba(255,255,255,.10);
+  padding: 10px 10px;
+  text-align: center;
+}
+
+th{
+  font-size: 12.5px;
+  color: rgba(255,255,255,.72);
+  background: rgba(255,255,255,.05);
+  font-weight: 700;
+}
+
+td.eq{
+  text-align: left;
+  font-weight: 800;
+}
+
+tr:hover td{
+  background: rgba(255,255,255,.03);
+}
+
+/* 14) Chip del header */
+.chip{
+  display:inline-flex;
+  align-items:center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.14);
+  background: rgba(0,0,0,.22);
+  color: rgba(255,255,255,.85);
+  font-weight: 650;
+}

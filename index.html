@@ -4,683 +4,658 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Torneo de Dante</title>
-  <style>
-    body { font-family: system-ui, Arial, sans-serif; margin: 24px; max-width: 1100px; }
-    h1 { margin-bottom: 6px; }
-    h2 { margin-top: 26px; }
-    .card { padding: 14px; border: 1px solid #ddd; border-radius: 12px; margin: 10px 0; }
-    .fila { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
-    label { font-size: 14px; }
-    select, input, button { padding: 8px 10px; font-size: 14px; }
-    input[type="number"] { width: 140px; }
-    input[type="text"] { width: 260px; }
-    input[type="date"] { width: 170px; }
-    button { cursor: pointer; }
-    .partido { padding: 10px 12px; border: 1px solid #ddd; border-radius: 10px; margin: 10px 0; }
-    .fecha { font-size: 13px; opacity: 0.8; }
-    .marcador { font-weight: 700; margin-top: 4px; font-size: 16px; }
-    .ok { color: #0a7; font-weight: 700; }
-    .error { color: #c00; font-weight: 700; }
-    .muted { opacity: 0.75; font-size: 13px; }
 
-    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-    th, td { border-bottom: 1px solid #eee; padding: 8px 10px; text-align: center; }
-    th { font-size: 13px; opacity: 0.85; }
-    td.eq { text-align: left; font-weight: 700; }
-
-    .badge { display: inline-block; padding: 3px 8px; border: 1px solid #ddd; border-radius: 999px; margin-right: 6px; margin-top: 6px; }
-    .sectionTitle { display:flex; align-items:baseline; gap:10px; }
-  </style>
+  <!-- ✅ CORRECTO: el link va directo en el head -->
+  <link rel="stylesheet" href="styles.css" />
 </head>
+
 <body>
-  <h1>Torneo de Dante</h1>
-  <div class="muted">Todo se guarda en el navegador (LocalStorage)</div>
+  <div class="app">
 
-  <h2>1) Equipos</h2>
-  <div class="card">
-    <div class="fila">
-      <label for="equipoNuevo">Agregar equipo:</label>
-      <input id="equipoNuevo" type="text" placeholder="Ej: Tigres" />
-      <button id="btnAgregarEquipo">Agregar</button>
-      <button id="btnBorrarEquipos">Borrar equipos</button>
+    <header class="top">
+      <div>
+        <h1>Torneo de Dante</h1>
+        <div class="muted">Todo se guarda en el navegador (LocalStorage)</div>
+      </div>
+      <div class="chip">Modo Galaxia</div>
+    </header>
+
+    <h2>1) Equipos</h2>
+    <div class="card">
+      <div class="fila">
+        <label for="equipoNuevo">Agregar equipo:</label>
+        <input id="equipoNuevo" type="text" placeholder="Ej: Tigres" />
+        <button id="btnAgregarEquipo">Agregar</button>
+        <button id="btnBorrarEquipos">Borrar equipos</button>
+      </div>
+
+      <div class="fila" style="margin-top:10px;">
+        <div class="muted">Equipos cargados:</div>
+        <div id="listaEquiposBadges"></div>
+      </div>
+
+      <div id="msgEquipos" style="margin-top:10px;"></div>
     </div>
 
-    <div class="fila" style="margin-top:10px;">
-      <div class="muted">Equipos cargados:</div>
-      <div id="listaEquiposBadges"></div>
+    <h2>2) Generar fixture de Liga (todos contra todos)</h2>
+    <div class="card">
+      <div class="fila">
+        <label for="fechaInicioLiga">Fecha inicio:</label>
+        <input id="fechaInicioLiga" type="date" />
+
+        <label for="diasPorFechaLiga">Días entre fechas:</label>
+        <input id="diasPorFechaLiga" type="number" min="1" step="1" value="7" />
+
+        <button id="btnGenerarLiga">Generar Liga</button>
+        <button id="btnBorrarLiga">Borrar Liga</button>
+      </div>
+      <div class="muted" style="margin-top:8px;">
+        Si la cantidad de equipos es impar, se agrega "DESCANSA" automáticamente.
+      </div>
+      <div id="msgLiga" style="margin-top:10px;"></div>
     </div>
 
-    <div id="msgEquipos" style="margin-top:10px;"></div>
-  </div>
+    <h2>3) Playoffs (cruces por posiciones)</h2>
+    <div class="card">
+      <div class="fila">
+        <label for="cantidadPlayoffs">Equipos a clasificar (2/4/8/16):</label>
+        <input id="cantidadPlayoffs" type="number" min="2" step="2" value="4" />
 
-  <h2>2) Generar fixture de Liga (todos contra todos)</h2>
-  <div class="card">
-    <div class="fila">
-      <label for="fechaInicioLiga">Fecha inicio:</label>
-      <input id="fechaInicioLiga" type="date" />
+        <label for="fechaInicioPO">Fecha inicio Playoffs:</label>
+        <input id="fechaInicioPO" type="date" />
 
-      <label for="diasPorFechaLiga">Días entre fechas:</label>
-      <input id="diasPorFechaLiga" type="number" min="1" step="1" value="7" />
+        <label for="diasEntreRondas">Días entre rondas:</label>
+        <input id="diasEntreRondas" type="number" min="1" step="1" value="7" />
 
-      <button id="btnGenerarLiga">Generar Liga</button>
-      <button id="btnBorrarLiga">Borrar Liga</button>
+        <button id="btnGenerarPlayoffs">Generar Playoffs</button>
+        <button id="btnBorrarPlayoffs">Borrar Playoffs</button>
+        <button id="btnSiguienteRonda">Generar siguiente ronda</button>
+      </div>
+
+      <div class="muted" style="margin-top:8px;">
+        Se arma: 1 vs N, 2 vs N-1, 3 vs N-2... según la tabla de posiciones actual.
+      </div>
+      <div id="msgPO" style="margin-top:10px;"></div>
     </div>
-    <div class="muted" style="margin-top:8px;">
-      Si la cantidad de equipos es impar, se agrega "DESCANSA" automáticamente.
+
+    <h2>4) Cargar resultado (Liga o Playoffs)</h2>
+    <div class="card">
+      <div class="fila">
+        <label for="selectPartido">Partido:</label>
+        <select id="selectPartido"></select>
+
+        <label for="gLocal">Goles Local:</label>
+        <input id="gLocal" type="number" min="0" step="1" value="0" />
+
+        <label for="gVisit">Goles Visitante:</label>
+        <input id="gVisit" type="number" min="0" step="1" value="0" />
+
+        <button id="btnGuardarResultado">Guardar</button>
+        <button id="btnResetTotal" title="Borra TODO lo guardado">Reset total</button>
+      </div>
+      <div id="msgRes" style="margin-top:10px;"></div>
     </div>
-    <div id="msgLiga" style="margin-top:10px;"></div>
-  </div>
 
-  <h2>3) Playoffs (cruces por posiciones)</h2>
-  <div class="card">
-    <div class="fila">
-      <label for="cantidadPlayoffs">Equipos a clasificar (2/4/8/16):</label>
-      <input id="cantidadPlayoffs" type="number" min="2" step="2" value="4" />
-
-      <label for="fechaInicioPO">Fecha inicio Playoffs:</label>
-      <input id="fechaInicioPO" type="date" />
-
-      <label for="diasEntreRondas">Días entre rondas:</label>
-      <input id="diasEntreRondas" type="number" min="1" step="1" value="7" />
-
-      <button id="btnGenerarPlayoffs">Generar Playoffs</button>
-      <button id="btnBorrarPlayoffs">Borrar Playoffs</button>
-      <button id="btnSiguienteRonda">Generar siguiente ronda</button>
-
+    <h2>Tabla de posiciones (solo Liga)</h2>
+    <div class="card">
+      <div class="muted">Se calcula con los partidos de Liga que ya tienen goles cargados.</div>
+      <div id="tabla-posiciones"></div>
     </div>
-    <div class="muted" style="margin-top:8px;">
-      Se arma: 1 vs N, 2 vs N-1, 3 vs N-2... según la tabla de posiciones actual.
-    </div>
-    <div id="msgPO" style="margin-top:10px;"></div>
-  </div>
 
-  <h2>4) Cargar resultado (Liga o Playoffs)</h2>
-  <div class="card">
-    <div class="fila">
-      <label for="selectPartido">Partido:</label>
-      <select id="selectPartido"></select>
+    <h2 class="sectionTitle">Fixture Liga <span class="muted">(fase regular)</span></h2>
+    <div id="fixture-liga"></div>
 
-      <label for="gLocal">Goles Local:</label>
-      <input id="gLocal" type="number" min="0" step="1" value="0" />
+    <h2 class="sectionTitle">Fixture Playoffs <span class="muted">(cruces)</span></h2>
+    <div id="fixture-playoffs"></div>
 
-      <label for="gVisit">Goles Visitante:</label>
-      <input id="gVisit" type="number" min="0" step="1" value="0" />
+    <script>
+      // -------------------- Persistencia --------------------
+      const KEY_STORAGE = "torneo_dante_app_v2";
 
-      <button id="btnGuardarResultado">Guardar</button>
-      <button id="btnResetTotal" title="Borra TODO lo guardado">Reset total</button>
-    </div>
-    <div id="msgRes" style="margin-top:10px;"></div>
-  </div>
-
-  <h2>Tabla de posiciones (solo Liga)</h2>
-  <div class="card">
-    <div class="muted">Se calcula con los partidos de Liga que ya tienen goles cargados.</div>
-    <div id="tabla-posiciones"></div>
-  </div>
-
-  <h2 class="sectionTitle">Fixture Liga <span class="muted">(fase regular)</span></h2>
-  <div id="fixture-liga"></div>
-
-  <h2 class="sectionTitle">Fixture Playoffs <span class="muted">(cruces)</span></h2>
-  <div id="fixture-playoffs"></div>
-
-  <script>
-    // -------------------- Persistencia --------------------
-    const KEY_STORAGE = "torneo_dante_app_v2";
-
-    function loadState() {
-      const raw = localStorage.getItem(KEY_STORAGE);
-      if (!raw) {
-        return { equipos: [], partidos: [] };
-      }
-      return JSON.parse(raw);
-    }
-
-    function saveState(s) {
-      localStorage.setItem(KEY_STORAGE, JSON.stringify(s));
-    }
-
-    let state = loadState();
-
-    // -------------------- Utilidades --------------------
-    function setMsg(id, tipo, texto) {
-      const el = document.getElementById(id);
-      el.className = (tipo === "ok") ? "ok" : "error";
-      el.textContent = texto;
-    }
-
-    function normalizeName(s) {
-      return String(s || "").trim();
-    }
-
-    function nextEquipoId() {
-      if (!state.equipos.length) return 1;
-      return Math.max(...state.equipos.map(e => e.id)) + 1;
-    }
-
-    function nextPartidoId() {
-      if (!state.partidos.length) return 1;
-      return Math.max(...state.partidos.map(p => p.id)) + 1;
-    }
-
-    function equipoPorId(id) {
-      return state.equipos.find(e => e.id === id);
-    }
-
-    function jugado(p) {
-      return p.golesLocal !== null && p.golesVisitante !== null;
-    }
-
-    function addDays(isoDate, days) {
-      const d = new Date(isoDate + "T00:00:00");
-      d.setDate(d.getDate() + days);
-      return d.toISOString().slice(0, 10);
-    }
-
-    function textoPartido(p) {
-      const local = equipoPorId(p.localId)?.nombre ?? "¿Local?";
-      const visitante = equipoPorId(p.visitanteId)?.nombre ?? "¿Visitante?";
-      const gl = (p.golesLocal === null) ? "-" : p.golesLocal;
-      const gv = (p.golesVisitante === null) ? "-" : p.golesVisitante;
-
-      const fase = p.fase || "Liga";
-      const ronda = p.ronda ? ` | ${p.ronda}` : "";
-      return `#${p.id} | ${fase}${ronda} | ${p.fecha} | ${local} ${gl} - ${gv} ${visitante}`;
-    }
-
-    // -------------------- Round-robin (Liga) --------------------
-    function generarRoundRobin(equiposIds) {
-      const ids = [...equiposIds];
-      const BYE = -1;
-      if (ids.length % 2 === 1) ids.push(BYE);
-
-      const n = ids.length;
-      const rounds = n - 1;
-      const half = n / 2;
-
-      let arr = [...ids];
-      const fixture = [];
-
-      for (let r = 0; r < rounds; r++) {
-        const matches = [];
-        for (let i = 0; i < half; i++) {
-          const a = arr[i];
-          const b = arr[n - 1 - i];
-          if (a !== BYE && b !== BYE) {
-            const home = (r % 2 === 0) ? a : b;
-            const away = (r % 2 === 0) ? b : a;
-            matches.push({ localId: home, visitanteId: away });
-          }
+      function loadState() {
+        const raw = localStorage.getItem(KEY_STORAGE);
+        if (!raw) {
+          return { equipos: [], partidos: [] };
         }
-        fixture.push(matches);
-
-        const fixed = arr[0];
-        const rest = arr.slice(1);
-        rest.unshift(rest.pop());
-        arr = [fixed, ...rest];
+        return JSON.parse(raw);
       }
 
-      return fixture; // array de fechas
-    }
-
-    // -------------------- Tabla (solo Liga) --------------------
-    function calcularTablaLiga() {
-      const stats = {};
-      state.equipos.forEach(e => {
-        stats[e.id] = { id: e.id, nombre: e.nombre, PJ:0, PG:0, PE:0, PP:0, GF:0, GC:0, DG:0, PTS:0 };
-      });
-
-      const partidosLiga = state.partidos.filter(p => (p.fase || "Liga") === "Liga");
-
-      partidosLiga.forEach(p => {
-        if (!jugado(p)) return;
-        const local = stats[p.localId];
-        const vis = stats[p.visitanteId];
-        const gl = Number(p.golesLocal);
-        const gv = Number(p.golesVisitante);
-
-        local.PJ++; vis.PJ++;
-        local.GF += gl; local.GC += gv;
-        vis.GF += gv;   vis.GC += gl;
-
-        if (gl > gv) { local.PG++; local.PTS += 3; vis.PP++; }
-        else if (gl < gv) { vis.PG++; vis.PTS += 3; local.PP++; }
-        else { local.PE++; vis.PE++; local.PTS++; vis.PTS++; }
-      });
-
-      Object.values(stats).forEach(s => s.DG = s.GF - s.GC);
-
-      return Object.values(stats).sort((a,b) => {
-        if (b.PTS !== a.PTS) return b.PTS - a.PTS;
-        if (b.DG !== a.DG) return b.DG - a.DG;
-        if (b.GF !== a.GF) return b.GF - a.GF;
-        return a.nombre.localeCompare(b.nombre);
-      });
-    }
-
-    function renderTabla() {
-      const cont = document.getElementById("tabla-posiciones");
-      if (!state.equipos.length) {
-        cont.innerHTML = `<div class="muted">Agregá equipos para ver la tabla.</div>`;
-        return;
+      function saveState(s) {
+        localStorage.setItem(KEY_STORAGE, JSON.stringify(s));
       }
 
-      const tabla = calcularTablaLiga();
+      let state = loadState();
 
-      let html = `
-        <table>
-          <thead>
-            <tr>
-              <th>#</th>
-              <th style="text-align:left">Equipo</th>
-              <th>PJ</th><th>PG</th><th>PE</th><th>PP</th>
-              <th>GF</th><th>GC</th><th>DG</th><th>Pts</th>
-            </tr>
-          </thead>
-          <tbody>
-      `;
-
-      tabla.forEach((s, i) => {
-        html += `
-          <tr>
-            <td>${i + 1}</td>
-            <td class="eq">${s.nombre}</td>
-            <td>${s.PJ}</td>
-            <td>${s.PG}</td>
-            <td>${s.PE}</td>
-            <td>${s.PP}</td>
-            <td>${s.GF}</td>
-            <td>${s.GC}</td>
-            <td>${s.DG}</td>
-            <td><b>${s.PTS}</b></td>
-          </tr>
-        `;
-      });
-
-      html += `</tbody></table>`;
-      cont.innerHTML = html;
-    }
-
-    // -------------------- Render: Equipos --------------------
-    function renderEquipos() {
-      const cont = document.getElementById("listaEquiposBadges");
-      cont.innerHTML = "";
-      state.equipos.forEach(e => {
-        const span = document.createElement("span");
-        span.className = "badge";
-        span.textContent = e.nombre;
-        cont.appendChild(span);
-      });
-    }
-
-    // -------------------- Render: Select Partidos --------------------
-    function renderSelectPartidos() {
-      const sel = document.getElementById("selectPartido");
-      sel.innerHTML = "";
-
-      if (!state.partidos.length) {
-        const opt = document.createElement("option");
-        opt.value = "";
-        opt.textContent = "Primero generá Liga o Playoffs";
-        sel.appendChild(opt);
-        sel.disabled = true;
-        return;
+      // -------------------- Utilidades --------------------
+      function setMsg(id, tipo, texto) {
+        const el = document.getElementById(id);
+        el.className = (tipo === "ok") ? "ok" : "error";
+        el.textContent = texto;
       }
 
-      sel.disabled = false;
-
-      // Orden: Liga primero, luego playoffs; no jugados arriba
-      const ordenados = [...state.partidos].sort((a, b) => {
-        const af = (a.fase || "Liga");
-        const bf = (b.fase || "Liga");
-        if (af !== bf) return af.localeCompare(bf);
-        const aj = jugado(a), bj = jugado(b);
-        if (aj !== bj) return aj ? 1 : -1;
-        return String(a.fecha).localeCompare(String(b.fecha)) || (a.id - b.id);
-      });
-
-      ordenados.forEach(p => {
-        const opt = document.createElement("option");
-        opt.value = p.id;
-        opt.textContent = textoPartido(p);
-        sel.appendChild(opt);
-      });
-    }
-
-    // -------------------- Render: Fixtures --------------------
-    function renderFixture(targetId, fase) {
-      const cont = document.getElementById(targetId);
-      cont.innerHTML = "";
-
-      const partidos = state.partidos.filter(p => (p.fase || "Liga") === fase);
-
-      if (!partidos.length) {
-        cont.innerHTML = `<div class="muted">Todavía no hay partidos en ${fase}.</div>`;
-        return;
+      function normalizeName(s) {
+        return String(s || "").trim();
       }
 
-      const ordenados = [...partidos].sort((a, b) => {
-        const aj = jugado(a), bj = jugado(b);
-        if (aj !== bj) return aj ? 1 : -1;
-        return String(a.fecha).localeCompare(String(b.fecha)) || (a.id - b.id);
-      });
+      function nextEquipoId() {
+        if (!state.equipos.length) return 1;
+        return Math.max(...state.equipos.map(e => e.id)) + 1;
+      }
 
-      ordenados.forEach(p => {
-        const local = equipoPorId(p.localId);
-        const visitante = equipoPorId(p.visitanteId);
+      function nextPartidoId() {
+        if (!state.partidos.length) return 1;
+        return Math.max(...state.partidos.map(p => p.id)) + 1;
+      }
 
+      function equipoPorId(id) {
+        return state.equipos.find(e => e.id === id);
+      }
+
+      function jugado(p) {
+        return p.golesLocal !== null && p.golesVisitante !== null;
+      }
+
+      function addDays(isoDate, days) {
+        const d = new Date(isoDate + "T00:00:00");
+        d.setDate(d.getDate() + days);
+        return d.toISOString().slice(0, 10);
+      }
+
+      function textoPartido(p) {
+        const local = equipoPorId(p.localId)?.nombre ?? "¿Local?";
+        const visitante = equipoPorId(p.visitanteId)?.nombre ?? "¿Visitante?";
         const gl = (p.golesLocal === null) ? "-" : p.golesLocal;
         const gv = (p.golesVisitante === null) ? "-" : p.golesVisitante;
 
-        const card = document.createElement("div");
-        card.className = "partido";
-        const rondaTxt = p.ronda ? ` | ${p.ronda}` : "";
-        card.innerHTML = `
-          <div class="fecha">Fase: ${fase}${rondaTxt} | Fecha: ${p.fecha} | Partido ID: ${p.id}</div>
-          <div class="marcador">${local.nombre} ${gl} - ${gv} ${visitante.nombre}</div>
+        const fase = p.fase || "Liga";
+        const ronda = p.ronda ? ` | ${p.ronda}` : "";
+        return `#${p.id} | ${fase}${ronda} | ${p.fecha} | ${local} ${gl} - ${gv} ${visitante}`;
+      }
+
+      // -------------------- Round-robin (Liga) --------------------
+      function generarRoundRobin(equiposIds) {
+        const ids = [...equiposIds];
+        const BYE = -1;
+        if (ids.length % 2 === 1) ids.push(BYE);
+
+        const n = ids.length;
+        const rounds = n - 1;
+        const half = n / 2;
+
+        let arr = [...ids];
+        const fixture = [];
+
+        for (let r = 0; r < rounds; r++) {
+          const matches = [];
+          for (let i = 0; i < half; i++) {
+            const a = arr[i];
+            const b = arr[n - 1 - i];
+            if (a !== BYE && b !== BYE) {
+              const home = (r % 2 === 0) ? a : b;
+              const away = (r % 2 === 0) ? b : a;
+              matches.push({ localId: home, visitanteId: away });
+            }
+          }
+          fixture.push(matches);
+
+          const fixed = arr[0];
+          const rest = arr.slice(1);
+          rest.unshift(rest.pop());
+          arr = [fixed, ...rest];
+        }
+
+        return fixture; // array de fechas
+      }
+
+      // -------------------- Tabla (solo Liga) --------------------
+      function calcularTablaLiga() {
+        const stats = {};
+        state.equipos.forEach(e => {
+          stats[e.id] = { id: e.id, nombre: e.nombre, PJ:0, PG:0, PE:0, PP:0, GF:0, GC:0, DG:0, PTS:0 };
+        });
+
+        const partidosLiga = state.partidos.filter(p => (p.fase || "Liga") === "Liga");
+
+        partidosLiga.forEach(p => {
+          if (!jugado(p)) return;
+          const local = stats[p.localId];
+          const vis = stats[p.visitanteId];
+          const gl = Number(p.golesLocal);
+          const gv = Number(p.golesVisitante);
+
+          local.PJ++; vis.PJ++;
+          local.GF += gl; local.GC += gv;
+          vis.GF += gv;   vis.GC += gl;
+
+          if (gl > gv) { local.PG++; local.PTS += 3; vis.PP++; }
+          else if (gl < gv) { vis.PG++; vis.PTS += 3; local.PP++; }
+          else { local.PE++; vis.PE++; local.PTS++; vis.PTS++; }
+        });
+
+        Object.values(stats).forEach(s => s.DG = s.GF - s.GC);
+
+        return Object.values(stats).sort((a,b) => {
+          if (b.PTS !== a.PTS) return b.PTS - a.PTS;
+          if (b.DG !== a.DG) return b.DG - a.DG;
+          if (b.GF !== a.GF) return b.GF - a.GF;
+          return a.nombre.localeCompare(b.nombre);
+        });
+      }
+
+      function renderTabla() {
+        const cont = document.getElementById("tabla-posiciones");
+        if (!state.equipos.length) {
+          cont.innerHTML = `<div class="muted">Agregá equipos para ver la tabla.</div>`;
+          return;
+        }
+
+        const tabla = calcularTablaLiga();
+
+        let html = `
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th style="text-align:left">Equipo</th>
+                <th>PJ</th><th>PG</th><th>PE</th><th>PP</th>
+                <th>GF</th><th>GC</th><th>DG</th><th>Pts</th>
+              </tr>
+            </thead>
+            <tbody>
         `;
-        cont.appendChild(card);
-      });
-    }
 
-    function renderAll() {
-      renderEquipos();
-      renderSelectPartidos();
-      renderTabla();
-      renderFixture("fixture-liga", "Liga");
-      renderFixture("fixture-playoffs", "Playoffs");
-    }
+        tabla.forEach((s, i) => {
+          html += `
+            <tr>
+              <td>${i + 1}</td>
+              <td class="eq">${s.nombre}</td>
+              <td>${s.PJ}</td>
+              <td>${s.PG}</td>
+              <td>${s.PE}</td>
+              <td>${s.PP}</td>
+              <td>${s.GF}</td>
+              <td>${s.GC}</td>
+              <td>${s.DG}</td>
+              <td><b>${s.PTS}</b></td>
+            </tr>
+          `;
+        });
 
-    // -------------------- Acciones: Equipos --------------------
-    function onAgregarEquipo() {
-      const nombre = normalizeName(document.getElementById("equipoNuevo").value);
-      if (!nombre) { setMsg("msgEquipos", "error", "Escribí un nombre de equipo."); return; }
+        html += `</tbody></table>`;
+        cont.innerHTML = html;
+      }
 
-      const existe = state.equipos.some(e => e.nombre.toLowerCase() === nombre.toLowerCase());
-      if (existe) { setMsg("msgEquipos", "error", "Ese equipo ya existe."); return; }
+      // -------------------- Render: Equipos --------------------
+      function renderEquipos() {
+        const cont = document.getElementById("listaEquiposBadges");
+        cont.innerHTML = "";
+        state.equipos.forEach(e => {
+          const span = document.createElement("span");
+          span.className = "badge";
+          span.textContent = e.nombre;
+          cont.appendChild(span);
+        });
+      }
 
-      state.equipos.push({ id: nextEquipoId(), nombre });
-      saveState(state);
+      // -------------------- Render: Select Partidos --------------------
+      function renderSelectPartidos() {
+        const sel = document.getElementById("selectPartido");
+        sel.innerHTML = "";
 
-      document.getElementById("equipoNuevo").value = "";
-      setMsg("msgEquipos", "ok", `Equipo agregado: ${nombre}`);
-      renderAll();
-    }
+        if (!state.partidos.length) {
+          const opt = document.createElement("option");
+          opt.value = "";
+          opt.textContent = "Primero generá Liga o Playoffs";
+          sel.appendChild(opt);
+          sel.disabled = true;
+          return;
+        }
 
-    function onBorrarEquipos() {
-      state.equipos = [];
-      state.partidos = [];
-      saveState(state);
-      setMsg("msgEquipos", "ok", "Se borraron equipos y todos los partidos.");
-      renderAll();
-    }
+        sel.disabled = false;
 
-    // -------------------- Acciones: Liga --------------------
-    function onGenerarLiga() {
-      if (state.equipos.length < 2) { setMsg("msgLiga", "error", "Necesitás al menos 2 equipos."); return; }
+        // Orden: Liga primero, luego playoffs; no jugados arriba
+        const ordenados = [...state.partidos].sort((a, b) => {
+          const af = (a.fase || "Liga");
+          const bf = (b.fase || "Liga");
+          if (af !== bf) return af.localeCompare(bf);
+          const aj = jugado(a), bj = jugado(b);
+          if (aj !== bj) return aj ? 1 : -1;
+          return String(a.fecha).localeCompare(String(b.fecha)) || (a.id - b.id);
+        });
 
-      const fechaInicio = document.getElementById("fechaInicioLiga").value;
-      const diasPorFecha = Number(document.getElementById("diasPorFechaLiga").value);
+        ordenados.forEach(p => {
+          const opt = document.createElement("option");
+          opt.value = p.id;
+          opt.textContent = textoPartido(p);
+          sel.appendChild(opt);
+        });
+      }
 
-      if (!fechaInicio) { setMsg("msgLiga", "error", "Elegí una fecha de inicio."); return; }
-      if (Number.isNaN(diasPorFecha) || diasPorFecha < 1) { setMsg("msgLiga", "error", "Días entre fechas debe ser 1 o más."); return; }
+      // -------------------- Render: Fixtures --------------------
+      function renderFixture(targetId, fase) {
+        const cont = document.getElementById(targetId);
+        cont.innerHTML = "";
 
-      // Borrar solo liga (conserva playoffs si existieran)
-      state.partidos = state.partidos.filter(p => (p.fase || "Liga") !== "Liga");
+        const partidos = state.partidos.filter(p => (p.fase || "Liga") === fase);
 
-      const ids = state.equipos.map(e => e.id);
-      const fechas = generarRoundRobin(ids);
+        if (!partidos.length) {
+          cont.innerHTML = `<div class="muted">Todavía no hay partidos en ${fase}.</div>`;
+          return;
+        }
 
-      let partidoId = nextPartidoId();
-      fechas.forEach((matches, idxFecha) => {
-        const fecha = addDays(fechaInicio, idxFecha * diasPorFecha);
-        matches.forEach(m => {
+        const ordenados = [...partidos].sort((a, b) => {
+          const aj = jugado(a), bj = jugado(b);
+          if (aj !== bj) return aj ? 1 : -1;
+          return String(a.fecha).localeCompare(String(b.fecha)) || (a.id - b.id);
+        });
+
+        ordenados.forEach(p => {
+          const local = equipoPorId(p.localId);
+          const visitante = equipoPorId(p.visitanteId);
+
+          const gl = (p.golesLocal === null) ? "-" : p.golesLocal;
+          const gv = (p.golesVisitante === null) ? "-" : p.golesVisitante;
+
+          const card = document.createElement("div");
+          card.className = "partido";
+          const rondaTxt = p.ronda ? ` | ${p.ronda}` : "";
+          card.innerHTML = `
+            <div class="fecha">Fase: ${fase}${rondaTxt} | Fecha: ${p.fecha} | Partido ID: ${p.id}</div>
+            <div class="marcador">${local.nombre} ${gl} - ${gv} ${visitante.nombre}</div>
+          `;
+          cont.appendChild(card);
+        });
+      }
+
+      function renderAll() {
+        renderEquipos();
+        renderSelectPartidos();
+        renderTabla();
+        renderFixture("fixture-liga", "Liga");
+        renderFixture("fixture-playoffs", "Playoffs");
+      }
+
+      // -------------------- Acciones: Equipos --------------------
+      function onAgregarEquipo() {
+        const nombre = normalizeName(document.getElementById("equipoNuevo").value);
+        if (!nombre) { setMsg("msgEquipos", "error", "Escribí un nombre de equipo."); return; }
+
+        const existe = state.equipos.some(e => e.nombre.toLowerCase() === nombre.toLowerCase());
+        if (existe) { setMsg("msgEquipos", "error", "Ese equipo ya existe."); return; }
+
+        state.equipos.push({ id: nextEquipoId(), nombre });
+        saveState(state);
+
+        document.getElementById("equipoNuevo").value = "";
+        setMsg("msgEquipos", "ok", `Equipo agregado: ${nombre}`);
+        renderAll();
+      }
+
+      function onBorrarEquipos() {
+        state.equipos = [];
+        state.partidos = [];
+        saveState(state);
+        setMsg("msgEquipos", "ok", "Se borraron equipos y todos los partidos.");
+        renderAll();
+      }
+
+      // -------------------- Acciones: Liga --------------------
+      function onGenerarLiga() {
+        if (state.equipos.length < 2) { setMsg("msgLiga", "error", "Necesitás al menos 2 equipos."); return; }
+
+        const fechaInicio = document.getElementById("fechaInicioLiga").value;
+        const diasPorFecha = Number(document.getElementById("diasPorFechaLiga").value);
+
+        if (!fechaInicio) { setMsg("msgLiga", "error", "Elegí una fecha de inicio."); return; }
+        if (Number.isNaN(diasPorFecha) || diasPorFecha < 1) { setMsg("msgLiga", "error", "Días entre fechas debe ser 1 o más."); return; }
+
+        // Borrar solo liga (conserva playoffs si existieran)
+        state.partidos = state.partidos.filter(p => (p.fase || "Liga") !== "Liga");
+
+        const ids = state.equipos.map(e => e.id);
+        const fechas = generarRoundRobin(ids);
+
+        let partidoId = nextPartidoId();
+        fechas.forEach((matches, idxFecha) => {
+          const fecha = addDays(fechaInicio, idxFecha * diasPorFecha);
+          matches.forEach(m => {
+            state.partidos.push({
+              id: partidoId++,
+              fase: "Liga",
+              fecha,
+              localId: m.localId,
+              visitanteId: m.visitanteId,
+              golesLocal: null,
+              golesVisitante: null
+            });
+          });
+        });
+
+        saveState(state);
+        setMsg("msgLiga", "ok", `Liga generada: ${fechas.length} fechas.`);
+        renderAll();
+      }
+
+      function onBorrarLiga() {
+        state.partidos = state.partidos.filter(p => (p.fase || "Liga") !== "Liga");
+        saveState(state);
+        setMsg("msgLiga", "ok", "Liga borrada.");
+        renderAll();
+      }
+
+      // -------------------- Acciones: Playoffs --------------------
+      function esPotenciaDeDos(n) {
+        return n >= 2 && (n & (n - 1)) === 0;
+      }
+
+      function onGenerarPlayoffs() {
+        const cant = Number(document.getElementById("cantidadPlayoffs").value);
+        const fechaInicio = document.getElementById("fechaInicioPO").value;
+        const diasEntreRondas = Number(document.getElementById("diasEntreRondas").value);
+
+        if (Number.isNaN(cant) || cant < 2) { setMsg("msgPO", "error", "La cantidad debe ser 2 o más."); return; }
+        if (!esPotenciaDeDos(cant)) { setMsg("msgPO", "error", "La cantidad debe ser 2, 4, 8, 16..."); return; }
+        if (cant > state.equipos.length) { setMsg("msgPO", "error", "No hay tantos equipos cargados."); return; }
+        if (!fechaInicio) { setMsg("msgPO", "error", "Elegí fecha de inicio de Playoffs."); return; }
+        if (Number.isNaN(diasEntreRondas) || diasEntreRondas < 1) { setMsg("msgPO", "error", "Días entre rondas debe ser 1 o más."); return; }
+
+        // Necesitamos tabla de liga
+        const tabla = calcularTablaLiga();
+        const clasificados = tabla.slice(0, cant);
+
+        // Borramos playoffs anteriores
+        state.partidos = state.partidos.filter(p => (p.fase || "Liga") !== "Playoffs");
+
+        // Ronda 1: cruces por ranking
+        const primeraRonda = [];
+        for (let i = 0; i < cant / 2; i++) {
+          const mejor = clasificados[i];
+          const peor = clasificados[cant - 1 - i];
+          primeraRonda.push({ localId: mejor.id, visitanteId: peor.id });
+        }
+
+        const nombreRonda = (cant === 2) ? "Final"
+                          : (cant === 4) ? "Semifinal"
+                          : (cant === 8) ? "Cuartos"
+                          : (cant === 16) ? "Octavos"
+                          : `Ronda de ${cant}`;
+
+        let partidoId = nextPartidoId();
+        const fechaRonda = fechaInicio;
+
+        primeraRonda.forEach(m => {
           state.partidos.push({
             id: partidoId++,
-            fase: "Liga",
-            fecha,
+            fase: "Playoffs",
+            ronda: nombreRonda,
+            fecha: fechaRonda,
             localId: m.localId,
             visitanteId: m.visitanteId,
             golesLocal: null,
             golesVisitante: null
           });
         });
-      });
 
-      saveState(state);
-      setMsg("msgLiga", "ok", `Liga generada: ${fechas.length} fechas.`);
-      renderAll();
-    }
-
-    function onBorrarLiga() {
-      state.partidos = state.partidos.filter(p => (p.fase || "Liga") !== "Liga");
-      saveState(state);
-      setMsg("msgLiga", "ok", "Liga borrada.");
-      renderAll();
-    }
-
-    // -------------------- Acciones: Playoffs --------------------
-    function esPotenciaDeDos(n) {
-      return n >= 2 && (n & (n - 1)) === 0;
-    }
-
-    function onGenerarPlayoffs() {
-      const cant = Number(document.getElementById("cantidadPlayoffs").value);
-      const fechaInicio = document.getElementById("fechaInicioPO").value;
-      const diasEntreRondas = Number(document.getElementById("diasEntreRondas").value);
-
-      if (Number.isNaN(cant) || cant < 2) { setMsg("msgPO", "error", "La cantidad debe ser 2 o más."); return; }
-      if (!esPotenciaDeDos(cant)) { setMsg("msgPO", "error", "La cantidad debe ser 2, 4, 8, 16..."); return; }
-      if (cant > state.equipos.length) { setMsg("msgPO", "error", "No hay tantos equipos cargados."); return; }
-      if (!fechaInicio) { setMsg("msgPO", "error", "Elegí fecha de inicio de Playoffs."); return; }
-      if (Number.isNaN(diasEntreRondas) || diasEntreRondas < 1) { setMsg("msgPO", "error", "Días entre rondas debe ser 1 o más."); return; }
-
-      // Necesitamos tabla de liga
-      const tabla = calcularTablaLiga();
-      const clasificados = tabla.slice(0, cant);
-
-      // Borramos playoffs anteriores
-      state.partidos = state.partidos.filter(p => (p.fase || "Liga") !== "Playoffs");
-
-      // Ronda 1: cruces por ranking
-      // 1 vs N, 2 vs N-1...
-      const primeraRonda = [];
-      for (let i = 0; i < cant / 2; i++) {
-        const mejor = clasificados[i];
-        const peor = clasificados[cant - 1 - i];
-        primeraRonda.push({ localId: mejor.id, visitanteId: peor.id });
+        saveState(state);
+        setMsg("msgPO", "ok", `Playoffs generados: ${nombreRonda} (${cant} equipos).`);
+        renderAll();
       }
 
-      // Nombre de ronda según cantidad
-      const nombreRonda = (cant === 2) ? "Final"
-                        : (cant === 4) ? "Semifinal"
-                        : (cant === 8) ? "Cuartos"
-                        : (cant === 16) ? "Octavos"
-                        : `Ronda de ${cant}`;
+      function onBorrarPlayoffs() {
+        state.partidos = state.partidos.filter(p => (p.fase || "Liga") !== "Playoffs");
+        saveState(state);
+        setMsg("msgPO", "ok", "Playoffs borrados.");
+        renderAll();
+      }
 
-      let partidoId = nextPartidoId();
-      const fechaRonda = fechaInicio;
+      // -------------------- Acciones: Resultados --------------------
+      function onGuardarResultado() {
+        if (!state.partidos.length) { setMsg("msgRes", "error", "Primero generá Liga o Playoffs."); return; }
 
-      primeraRonda.forEach(m => {
-        state.partidos.push({
-          id: partidoId++,
-          fase: "Playoffs",
-          ronda: nombreRonda,
-          fecha: fechaRonda,
-          localId: m.localId,
-          visitanteId: m.visitanteId,
-          golesLocal: null,
-          golesVisitante: null
+        const idPartido = Number(document.getElementById("selectPartido").value);
+        const gLocal = Number(document.getElementById("gLocal").value);
+        const gVisit = Number(document.getElementById("gVisit").value);
+
+        if (Number.isNaN(idPartido)) { setMsg("msgRes", "error", "Elegí un partido válido."); return; }
+        if (Number.isNaN(gLocal) || Number.isNaN(gVisit) || gLocal < 0 || gVisit < 0) {
+          setMsg("msgRes", "error", "Los goles deben ser números 0 o más.");
+          return;
+        }
+
+        const p = state.partidos.find(x => x.id === idPartido);
+        if (!p) { setMsg("msgRes", "error", "No encontré ese partido."); return; }
+
+        p.golesLocal = gLocal;
+        p.golesVisitante = gVisit;
+
+        saveState(state);
+        setMsg("msgRes", "ok", `Guardado: ${textoPartido(p)}`);
+        renderAll();
+      }
+
+      function onResetTotal() {
+        localStorage.removeItem(KEY_STORAGE);
+        state = loadState();
+        setMsg("msgEquipos", "ok", "Reset total hecho.");
+        setMsg("msgLiga", "ok", "Reset total hecho.");
+        setMsg("msgPO", "ok", "Reset total hecho.");
+        setMsg("msgRes", "ok", "Reset total hecho.");
+        renderAll();
+      }
+
+      function nombreRondaPorCantidad(cantEquipos) {
+        if (cantEquipos === 2) return "Final";
+        if (cantEquipos === 4) return "Semifinal";
+        if (cantEquipos === 8) return "Cuartos";
+        if (cantEquipos === 16) return "Octavos";
+        return `Ronda de ${cantEquipos}`;
+      }
+
+      function obtenerUltimaRondaPlayoffs() {
+        const po = state.partidos.filter(p => (p.fase || "Liga") === "Playoffs");
+        if (!po.length) return null;
+
+        const ordenados = [...po].sort((a,b) => {
+          const c = String(a.fecha).localeCompare(String(b.fecha));
+          if (c !== 0) return c;
+          return a.id - b.id;
         });
-      });
 
-      saveState(state);
-      setMsg("msgPO", "ok", `Playoffs generados: ${nombreRonda} (${cant} equipos).`);
-      renderAll();
-    }
-
-    function onBorrarPlayoffs() {
-      state.partidos = state.partidos.filter(p => (p.fase || "Liga") !== "Playoffs");
-      saveState(state);
-      setMsg("msgPO", "ok", "Playoffs borrados.");
-      renderAll();
-    }
-
-    // -------------------- Acciones: Resultados --------------------
-    function onGuardarResultado() {
-      if (!state.partidos.length) { setMsg("msgRes", "error", "Primero generá Liga o Playoffs."); return; }
-
-      const idPartido = Number(document.getElementById("selectPartido").value);
-      const gLocal = Number(document.getElementById("gLocal").value);
-      const gVisit = Number(document.getElementById("gVisit").value);
-
-      if (Number.isNaN(idPartido)) { setMsg("msgRes", "error", "Elegí un partido válido."); return; }
-      if (Number.isNaN(gLocal) || Number.isNaN(gVisit) || gLocal < 0 || gVisit < 0) {
-        setMsg("msgRes", "error", "Los goles deben ser números 0 o más.");
-        return;
+        const ultimo = ordenados[ordenados.length - 1];
+        const ronda = ultimo.ronda || "";
+        const mismos = po.filter(p => (p.ronda || "") === ronda && p.fecha === ultimo.fecha);
+        return { ronda, fecha: ultimo.fecha, partidos: mismos };
       }
 
-      const p = state.partidos.find(x => x.id === idPartido);
-      if (!p) { setMsg("msgRes", "error", "No encontré ese partido."); return; }
+      function ganadorDePartido(p) {
+        if (p.golesLocal === null || p.golesVisitante === null) return null;
+        if (p.golesLocal === p.golesVisitante) return "EMPATE";
+        return (p.golesLocal > p.golesVisitante) ? p.localId : p.visitanteId;
+      }
 
-      p.golesLocal = gLocal;
-      p.golesVisitante = gVisit;
+      function onGenerarSiguienteRonda() {
+        const diasEntreRondas = Number(document.getElementById("diasEntreRondas").value);
+        if (Number.isNaN(diasEntreRondas) || diasEntreRondas < 1) {
+          setMsg("msgPO", "error", "Días entre rondas debe ser 1 o más.");
+          return;
+        }
 
-      saveState(state);
-      setMsg("msgRes", "ok", `Guardado: ${textoPartido(p)}`);
+        const ultima = obtenerUltimaRondaPlayoffs();
+        if (!ultima) {
+          setMsg("msgPO", "error", "No hay playoffs todavía. Primero generá Playoffs.");
+          return;
+        }
+
+        for (const p of ultima.partidos) {
+          if (!jugado(p)) {
+            setMsg("msgPO", "error", "Faltan resultados en la última ronda. Cargá todos los goles.");
+            return;
+          }
+          if (p.golesLocal === p.golesVisitante) {
+            setMsg("msgPO", "error", "Hay un empate en playoffs. Por ahora no se permiten empates (faltan penales).");
+            return;
+          }
+        }
+
+        const ganadores = ultima.partidos.map(p => ganadorDePartido(p));
+        if (ganadores.includes(null) || ganadores.includes("EMPATE")) {
+          setMsg("msgPO", "error", "No pude calcular ganadores. Revisá resultados.");
+          return;
+        }
+
+        if (ganadores.length === 1) {
+          setMsg("msgPO", "ok", "Ya está: esa fue la Final. Hay campeón.");
+          return;
+        }
+
+        const nuevaCantidadEquipos = ganadores.length;
+        const rondaNueva = nombreRondaPorCantidad(nuevaCantidadEquipos);
+        const fechaNueva = addDays(ultima.fecha, diasEntreRondas);
+
+        let partidoId = nextPartidoId();
+
+        for (let i = 0; i < ganadores.length; i += 2) {
+          const a = ganadores[i];
+          const b = ganadores[i + 1];
+
+          state.partidos.push({
+            id: partidoId++,
+            fase: "Playoffs",
+            ronda: rondaNueva,
+            fecha: fechaNueva,
+            localId: a,
+            visitanteId: b,
+            golesLocal: null,
+            golesVisitante: null
+          });
+        }
+
+        saveState(state);
+        setMsg("msgPO", "ok", `Siguiente ronda generada: ${rondaNueva} (${ganadores.length} equipos) para ${fechaNueva}.`);
+        renderAll();
+      }
+
+      // -------------------- Boot --------------------
+      const hoyIso = new Date().toISOString().slice(0, 10);
+      document.getElementById("fechaInicioLiga").value = hoyIso;
+      document.getElementById("fechaInicioPO").value = hoyIso;
+
+      document.getElementById("btnAgregarEquipo").addEventListener("click", onAgregarEquipo);
+      document.getElementById("btnBorrarEquipos").addEventListener("click", onBorrarEquipos);
+
+      document.getElementById("btnGenerarLiga").addEventListener("click", onGenerarLiga);
+      document.getElementById("btnBorrarLiga").addEventListener("click", onBorrarLiga);
+
+      document.getElementById("btnGenerarPlayoffs").addEventListener("click", onGenerarPlayoffs);
+      document.getElementById("btnBorrarPlayoffs").addEventListener("click", onBorrarPlayoffs);
+      document.getElementById("btnSiguienteRonda").addEventListener("click", onGenerarSiguienteRonda);
+
+      document.getElementById("btnGuardarResultado").addEventListener("click", onGuardarResultado);
+      document.getElementById("btnResetTotal").addEventListener("click", onResetTotal);
+
       renderAll();
-    }
+    </script>
 
-    function onResetTotal() {
-      localStorage.removeItem(KEY_STORAGE);
-      state = loadState();
-      setMsg("msgEquipos", "ok", "Reset total hecho.");
-      setMsg("msgLiga", "ok", "Reset total hecho.");
-      setMsg("msgPO", "ok", "Reset total hecho.");
-      setMsg("msgRes", "ok", "Reset total hecho.");
-      renderAll();
-    }
-
-    function nombreRondaPorCantidad(cantEquipos) {
-  if (cantEquipos === 2) return "Final";
-  if (cantEquipos === 4) return "Semifinal";
-  if (cantEquipos === 8) return "Cuartos";
-  if (cantEquipos === 16) return "Octavos";
-  return `Ronda de ${cantEquipos}`;
-}
-
-function obtenerUltimaRondaPlayoffs() {
-  const po = state.partidos.filter(p => (p.fase || "Liga") === "Playoffs");
-  if (!po.length) return null;
-
-  // Orden por fecha y luego id
-  const ordenados = [...po].sort((a,b) => {
-    const c = String(a.fecha).localeCompare(String(b.fecha));
-    if (c !== 0) return c;
-    return a.id - b.id;
-  });
-
-  const ultimo = ordenados[ordenados.length - 1];
-  const ronda = ultimo.ronda || "";
-  // devolvemos todos los partidos que sean de esa ronda y esa fecha
-  const mismos = po.filter(p => (p.ronda || "") === ronda && p.fecha === ultimo.fecha);
-  return { ronda, fecha: ultimo.fecha, partidos: mismos };
-}
-
-function ganadorDePartido(p) {
-  // En playoffs NO permitimos empate por ahora
-  if (p.golesLocal === null || p.golesVisitante === null) return null;
-  if (p.golesLocal === p.golesVisitante) return "EMPATE";
-  return (p.golesLocal > p.golesVisitante) ? p.localId : p.visitanteId;
-}
-
-function onGenerarSiguienteRonda() {
-  const diasEntreRondas = Number(document.getElementById("diasEntreRondas").value);
-  if (Number.isNaN(diasEntreRondas) || diasEntreRondas < 1) {
-    setMsg("msgPO", "error", "Días entre rondas debe ser 1 o más.");
-    return;
-  }
-
-  const ultima = obtenerUltimaRondaPlayoffs();
-  if (!ultima) {
-    setMsg("msgPO", "error", "No hay playoffs todavía. Primero generá Playoffs.");
-    return;
-  }
-
-  // Validar que todos los partidos de la última ronda estén jugados
-  for (const p of ultima.partidos) {
-    if (!jugado(p)) {
-      setMsg("msgPO", "error", "Faltan resultados en la última ronda. Cargá todos los goles.");
-      return;
-    }
-    if (p.golesLocal === p.golesVisitante) {
-      setMsg("msgPO", "error", "Hay un empate en playoffs. Por ahora no se permiten empates (faltan penales).");
-      return;
-    }
-  }
-
-  // Ganadores
-  const ganadores = ultima.partidos.map(p => ganadorDePartido(p));
-  if (ganadores.includes(null) || ganadores.includes("EMPATE")) {
-    setMsg("msgPO", "error", "No pude calcular ganadores. Revisá resultados.");
-    return;
-  }
-
-  if (ganadores.length === 1) {
-    setMsg("msgPO", "ok", "Ya está: esa fue la Final. Hay campeón.");
-    return;
-  }
-
-  // Armar cruces: ganadores[0] vs ganadores[1], ganadores[2] vs ganadores[3], etc.
-  const nuevaCantidadEquipos = ganadores.length;
-  const rondaNueva = nombreRondaPorCantidad(nuevaCantidadEquipos);
-  const fechaNueva = addDays(ultima.fecha, diasEntreRondas);
-
-  let partidoId = nextPartidoId();
-
-  for (let i = 0; i < ganadores.length; i += 2) {
-    const a = ganadores[i];
-    const b = ganadores[i + 1];
-
-    // regla simple: el primero queda de local
-    state.partidos.push({
-      id: partidoId++,
-      fase: "Playoffs",
-      ronda: rondaNueva,
-      fecha: fechaNueva,
-      localId: a,
-      visitanteId: b,
-      golesLocal: null,
-      golesVisitante: null
-    });
-  }
-
-  saveState(state);
-  setMsg("msgPO", "ok", `Siguiente ronda generada: ${rondaNueva} (${ganadores.length} equipos) para ${fechaNueva}.`);
-  renderAll();
-}
-
-
-    // -------------------- Boot --------------------
-    const hoyIso = new Date().toISOString().slice(0, 10);
-    document.getElementById("fechaInicioLiga").value = hoyIso;
-    document.getElementById("fechaInicioPO").value = hoyIso;
-
-    document.getElementById("btnAgregarEquipo").addEventListener("click", onAgregarEquipo);
-    document.getElementById("btnBorrarEquipos").addEventListener("click", onBorrarEquipos);
-
-    document.getElementById("btnGenerarLiga").addEventListener("click", onGenerarLiga);
-    document.getElementById("btnBorrarLiga").addEventListener("click", onBorrarLiga);
-
-    document.getElementById("btnGenerarPlayoffs").addEventListener("click", onGenerarPlayoffs);
-    document.getElementById("btnBorrarPlayoffs").addEventListener("click", onBorrarPlayoffs);
-    document.getElementById("btnSiguienteRonda").addEventListener("click", onGenerarSiguienteRonda);
-
-
-    document.getElementById("btnGuardarResultado").addEventListener("click", onGuardarResultado);
-    document.getElementById("btnResetTotal").addEventListener("click", onResetTotal);
-
-    renderAll();
-  </script>
+  </div>
 </body>
 </html>
