@@ -175,6 +175,7 @@
       <div id="msgEquipos" style="margin-top:10px;"></div>
     </div>
 
+    <div id="seccionLiga">
     <h2>2) Generar fixture de Liga (todos contra todos)</h2>
     <div class="card">
       <div class="fila">
@@ -192,7 +193,9 @@
       </div>
       <div id="msgLiga" style="margin-top:10px;"></div>
     </div>
+    </div>
 
+    <div id="seccionPlayoffs">
     <h2>3) Playoffs (cruces por posiciones)</h2>
     <div class="card">
       <div class="fila">
@@ -215,6 +218,7 @@
       </div>
       <div id="msgPO" style="margin-top:10px;"></div>
     </div>
+    </div>
 
     <h2>4) Cargar resultado (Liga o Playoffs)</h2>
     <div class="card">
@@ -234,6 +238,7 @@
       <div id="msgRes" style="margin-top:10px;"></div>
     </div>
 
+    <div id="seccionTablaLiga">
     <h2>Tabla de posiciones (solo Liga)</h2>
     <div class="card">
       <div class="muted">Se calcula con los partidos de Liga que ya tienen goles cargados.</div>
@@ -242,9 +247,12 @@
 
     <h2 class="sectionTitle">Fixture Liga <span class="muted">(fase regular)</span></h2>
     <div id="fixture-liga"></div>
+    </div>
 
+    <div id="seccionFixturePlayoffs">
     <h2 class="sectionTitle">Fixture Playoffs <span class="muted">(cruces)</span></h2>
     <div id="fixture-playoffs"></div>
+    </div>
 
     <script>
       // -------------------- Persistencia --------------------
@@ -1003,7 +1011,25 @@
         // Poner el nombre del torneo en el título
         document.getElementById('tituloTorneo').textContent = state.config.nombre;
 
+        aplicarFormatoSecciones();
         renderAll();
+      }
+
+      // Muestra/oculta secciones según el formato del torneo
+      function aplicarFormatoSecciones() {
+        if (!state.config) return;
+
+        const formato = state.config.formato;
+
+        // Secciones de Liga (fixture + tabla)
+        const mostrarLiga = (formato === 'Liga' || formato === 'Liga+Playoffs');
+        document.getElementById('seccionLiga').style.display = mostrarLiga ? '' : 'none';
+        document.getElementById('seccionTablaLiga').style.display = mostrarLiga ? '' : 'none';
+
+        // Secciones de Playoffs
+        const mostrarPlayoffs = (formato === 'Eliminacion' || formato === 'Liga+Playoffs');
+        document.getElementById('seccionPlayoffs').style.display = mostrarPlayoffs ? '' : 'none';
+        document.getElementById('seccionFixturePlayoffs').style.display = mostrarPlayoffs ? '' : 'none';
       }
 
       function checkWizardOrApp() {
@@ -1012,6 +1038,7 @@
           document.getElementById('wizard').style.display = 'none';
           document.getElementById('mainApp').style.display = 'block';
           document.getElementById('tituloTorneo').textContent = state.config.nombre;
+          aplicarFormatoSecciones();
         } else {
           // Primera vez, mostrar wizard
           document.getElementById('wizard').style.display = 'flex';
