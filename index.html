@@ -1120,19 +1120,13 @@
       }
 
       function wizardSkip() {
-        if (currentStep === 7) {
-          // Sin equipos no se puede hacer fixture ni jugadores
-          finishWizard();
-          return;
-        }
-        if (currentStep === 8) {
-          showStep(9);
-          return;
-        }
+        // Si es el último paso, terminar
         if (currentStep === 9) {
           finishWizard();
           return;
         }
+        // Si no, solo saltear este paso
+        showStep(currentStep + 1);
       }
 
       // ---- Wizard: Equipos ----
