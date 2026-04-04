@@ -124,6 +124,28 @@
         <div class="wizard-msg" id="wizMsg5"></div>
         <div class="wizard-nav">
           <button class="wizard-btn-back" onclick="wizardBack()">← Atrás</button>
+          <button class="wizard-btn-next" onclick="wizardNext()">Siguiente →</button>
+        </div>
+      </div>
+
+      <!-- Paso 6: Duración del torneo -->
+      <div class="wizard-step" data-step="6">
+        <div class="wizard-progress"></div>
+        <h2 class="wizard-question">¿Cuándo empieza tu torneo?</h2>
+        <div class="wizard-duration">
+          <div class="wizard-duration-field">
+            <label>📅 Fecha de inicio</label>
+            <input type="date" id="wizFechaInicio" class="wizard-input" />
+          </div>
+          <div class="wizard-duration-field">
+            <label>📆 Días entre cada fecha</label>
+            <input type="number" id="wizDiasEntreFechas" min="1" max="60" value="7" class="wizard-input" style="max-width:120px;" />
+            <span class="wizard-field-hint">ej: 7 = una semana</span>
+          </div>
+        </div>
+        <div class="wizard-msg" id="wizMsg6"></div>
+        <div class="wizard-nav">
+          <button class="wizard-btn-back" onclick="wizardBack()">← Atrás</button>
           <button class="wizard-btn-next wizard-btn-confirm" onclick="wizardNext()">✓ Confirmar</button>
         </div>
       </div>
@@ -139,7 +161,7 @@
         <h1 id="tituloTorneo">Torneo de Dante</h1>
         <div class="muted">Todo se guarda en el navegador (LocalStorage)</div>
       </div>
-      <div class="chip">Modo Galaxia</div>
+      <button class="chip" id="btnToggleTema" onclick="toggleTema()">🌌 Modo Galaxia</button>
     </header>
 
     <h2>🔗 Conexión con Google Sheets</h2>
@@ -869,8 +891,17 @@
         titulares: 11,
         suplentes: 5,
         modalidad: '',
-        clasificados: 4
+        clasificados: 4,
+        fechaInicio: '',
+        diasEntreFechas: 7
       };
+
+      function getStepSequence() {
+        const steps = [1, 2, 3, 4];
+        if (wizardConfig.formato === 'Liga+Playoffs') steps.push(5);
+        steps.push(6);
+        return steps;
+      }
 
       function showStep(step) {
         document.querySelectorAll('.wizard-step').forEach(s => {
@@ -880,20 +911,14 @@
         if (target) target.classList.add('active');
         currentStep = step;
 
-        // Update total steps display
-        const total = wizardConfig.formato === 'Liga+Playoffs' ? 5 : 4;
-        document.querySelectorAll('.wizard-total').forEach(el => {
-          el.textContent = total;
-        });
-
-        // Update step 4 button text
-        const btn4 = document.getElementById('btnStep4Next');
-        if (wizardConfig.formato && wizardConfig.formato !== 'Liga+Playoffs') {
-          btn4.textContent = '✓ Confirmar';
-          btn4.classList.add('wizard-btn-confirm');
-        } else {
-          btn4.textContent = 'Siguiente →';
-          btn4.classList.remove('wizard-btn-confirm');
+        // Update progress text dynamically
+        const seq = getStepSequence();
+        const visualIndex = seq.indexOf(step);
+        if (visualIndex !== -1) {
+          const progressEl = target.querySelector('.wizard-progress');
+          if (progressEl) {
+            progressEl.textContent = `PASO ${visualIndex + 1} DE ${seq.length}`;
+          }
         }
       }
 
@@ -970,9 +995,9 @@
           setWizMsg('wizMsg4', '');
           wizardConfig.modalidad = mod;
 
-          // Si NO es Liga+Playoffs, termina acá
+          // Si NO es Liga+Playoffs, saltear paso 5 e ir a paso 6
           if (wizardConfig.formato !== 'Liga+Playoffs') {
-            finishWizard();
+            showStep(6);
             return;
           }
         }
@@ -986,6 +1011,23 @@
           }
           setWizMsg('wizMsg5', '');
           wizardConfig.clasificados = Number(clas);
+        }
+
+        // Paso 6: Duración del torneo
+        if (currentStep === 6) {
+          const fecha = document.getElementById('wizFechaInicio').value;
+          const dias = Number(document.getElementById('wizDiasEntreFechas').value);
+          if (!fecha) {
+            setWizMsg('wizMsg6', 'Elegí la fecha de inicio');
+            return;
+          }
+          if (isNaN(dias) || dias < 1) {
+            setWizMsg('wizMsg6', 'Los días deben ser 1 o más');
+            return;
+          }
+          setWizMsg('wizMsg6', '');
+          wizardConfig.fechaInicio = fecha;
+          wizardConfig.diasEntreFechas = dias;
           finishWizard();
           return;
         }
@@ -998,7 +1040,36 @@
           showStep(0);
           return;
         }
+        // Si estamos en paso 6 y no hay playoffs, volver a paso 4
+        if (currentStep === 6 && wizardConfig.formato !== 'Liga+Playoffs') {
+          showStep(4);
+          return;
+        }
         showStep(currentStep - 1);
+      }
+
+      // -------------------- Tema Galaxia / Cielo --------------------
+      function toggleTema() {
+        const body = document.body;
+        const btn = document.getElementById('btnToggleTema');
+        if (body.dataset.theme === 'cielo') {
+          body.dataset.theme = 'galaxia';
+          btn.textContent = '🌌 Modo Galaxia';
+          localStorage.setItem('torneo_dante_tema', 'galaxia');
+        } else {
+          body.dataset.theme = 'cielo';
+          btn.textContent = '☁️ Modo Cielo';
+          localStorage.setItem('torneo_dante_tema', 'cielo');
+        }
+      }
+
+      function cargarTema() {
+        const tema = localStorage.getItem('torneo_dante_tema') || 'galaxia';
+        document.body.dataset.theme = tema;
+        const btn = document.getElementById('btnToggleTema');
+        if (btn) {
+          btn.textContent = tema === 'cielo' ? '☁️ Modo Cielo' : '🌌 Modo Galaxia';
+        }
       }
 
       function finishWizard() {
@@ -1050,6 +1121,7 @@
       const hoyIso = new Date().toISOString().slice(0, 10);
       document.getElementById("fechaInicioLiga").value = hoyIso;
       document.getElementById("fechaInicioPO").value = hoyIso;
+      document.getElementById("wizFechaInicio").value = hoyIso;
 
       document.getElementById("btnAgregarEquipo").addEventListener("click", onAgregarEquipo);
       document.getElementById("btnBorrarEquipos").addEventListener("click", onBorrarEquipos);
@@ -1082,6 +1154,9 @@
         document.getElementById("urlScript").value = savedUrl;
         setSyncStatus("🔗 Conectado", "ok");
       }
+
+      // Cargar tema guardado
+      cargarTema();
 
       // Decidir si mostrar wizard o app
       checkWizardOrApp();
