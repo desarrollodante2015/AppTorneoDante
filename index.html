@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -19,6 +20,22 @@
       </div>
       <div class="chip">Modo Galaxia</div>
     </header>
+
+    <h2>🔗 Conexión con Google Sheets</h2>
+    <div class="card card-connection">
+      <div class="muted">Conectá tu app con una hoja de Google para guardar los datos en la nube ☁️</div>
+      <div class="fila" style="margin-top:10px;">
+        <label for="urlScript">URL del Script:</label>
+        <input id="urlScript" type="text" placeholder="Pegá acá la URL del Google Apps Script..." />
+        <button id="btnGuardarUrl">💾 Guardar URL</button>
+      </div>
+      <div class="fila" style="margin-top:10px;">
+        <button id="btnCargarDesdeSheets" class="btn-sync">📥 Cargar desde Sheets</button>
+        <button id="btnGuardarEnSheets" class="btn-sync">📤 Guardar en Sheets</button>
+        <span id="syncStatus" class="sync-status"></span>
+      </div>
+      <div id="msgSync" style="margin-top:10px;"></div>
+    </div>
 
     <h2>1) Equipos</h2>
     <div class="card">
@@ -211,7 +228,7 @@
       function calcularTablaLiga() {
         const stats = {};
         state.equipos.forEach(e => {
-          stats[e.id] = { id: e.id, nombre: e.nombre, PJ:0, PG:0, PE:0, PP:0, GF:0, GC:0, DG:0, PTS:0 };
+          stats[e.id] = { id: e.id, nombre: e.nombre, PJ: 0, PG: 0, PE: 0, PP: 0, GF: 0, GC: 0, DG: 0, PTS: 0 };
         });
 
         const partidosLiga = state.partidos.filter(p => (p.fase || "Liga") === "Liga");
@@ -225,7 +242,7 @@
 
           local.PJ++; vis.PJ++;
           local.GF += gl; local.GC += gv;
-          vis.GF += gv;   vis.GC += gl;
+          vis.GF += gv; vis.GC += gl;
 
           if (gl > gv) { local.PG++; local.PTS += 3; vis.PP++; }
           else if (gl < gv) { vis.PG++; vis.PTS += 3; local.PP++; }
@@ -234,7 +251,7 @@
 
         Object.values(stats).forEach(s => s.DG = s.GF - s.GC);
 
-        return Object.values(stats).sort((a,b) => {
+        return Object.values(stats).sort((a, b) => {
           if (b.PTS !== a.PTS) return b.PTS - a.PTS;
           if (b.DG !== a.DG) return b.DG - a.DG;
           if (b.GF !== a.GF) return b.GF - a.GF;
@@ -475,10 +492,10 @@
         }
 
         const nombreRonda = (cant === 2) ? "Final"
-                          : (cant === 4) ? "Semifinal"
-                          : (cant === 8) ? "Cuartos"
-                          : (cant === 16) ? "Octavos"
-                          : `Ronda de ${cant}`;
+          : (cant === 4) ? "Semifinal"
+            : (cant === 8) ? "Cuartos"
+              : (cant === 16) ? "Octavos"
+                : `Ronda de ${cant}`;
 
         let partidoId = nextPartidoId();
         const fechaRonda = fechaInicio;
@@ -555,7 +572,7 @@
         const po = state.partidos.filter(p => (p.fase || "Liga") === "Playoffs");
         if (!po.length) return null;
 
-        const ordenados = [...po].sort((a,b) => {
+        const ordenados = [...po].sort((a, b) => {
           const c = String(a.fecha).localeCompare(String(b.fecha));
           if (c !== 0) return c;
           return a.id - b.id;
@@ -635,6 +652,86 @@
         renderAll();
       }
 
+      // -------------------- Google Sheets Sync --------------------
+      const KEY_SCRIPT_URL = "torneo_dante_script_url";
+
+      function getScriptUrl() {
+        return localStorage.getItem(KEY_SCRIPT_URL) || "";
+      }
+
+      function setSyncStatus(texto, tipo) {
+        const el = document.getElementById("syncStatus");
+        el.textContent = texto;
+        el.className = "sync-status" + (tipo ? " " + tipo : "");
+      }
+
+      function onGuardarUrl() {
+        const url = document.getElementById("urlScript").value.trim();
+        if (!url) {
+          setMsg("msgSync", "error", "Pegá la URL del script.");
+          return;
+        }
+        localStorage.setItem(KEY_SCRIPT_URL, url);
+        setMsg("msgSync", "ok", "URL guardada ✅ Ahora podés cargar o guardar datos.");
+        setSyncStatus("🔗 Conectado", "ok");
+      }
+
+      async function cargarDesdeSheets() {
+        const url = getScriptUrl();
+        if (!url) {
+          setMsg("msgSync", "error", "Primero pegá y guardá la URL del Google Apps Script.");
+          return;
+        }
+
+        try {
+          setSyncStatus("⏳ Cargando...", "loading");
+          const response = await fetch(url + "?action=leer");
+          const data = await response.json();
+
+          state.equipos = data.equipos || [];
+          state.partidos = data.partidos || [];
+          saveState(state);
+
+          setSyncStatus("✅ Cargado", "ok");
+          setMsg("msgSync", "ok", "¡Datos cargados desde Google Sheets!");
+          renderAll();
+        } catch (err) {
+          setSyncStatus("❌ Error", "error");
+          setMsg("msgSync", "error", "Error al cargar: " + err.message);
+        }
+      }
+
+      async function guardarEnSheets() {
+        const url = getScriptUrl();
+        if (!url) {
+          setMsg("msgSync", "error", "Primero pegá y guardá la URL del Google Apps Script.");
+          return;
+        }
+
+        try {
+          setSyncStatus("⏳ Guardando...", "loading");
+          const response = await fetch(url, {
+            method: "POST",
+            body: JSON.stringify({
+              action: "guardar",
+              equipos: state.equipos,
+              partidos: state.partidos
+            })
+          });
+          const data = await response.json();
+
+          if (data.ok) {
+            setSyncStatus("✅ Guardado", "ok");
+            setMsg("msgSync", "ok", "¡Datos guardados en Google Sheets!");
+          } else {
+            throw new Error(data.error || "Error desconocido");
+          }
+        } catch (err) {
+          setSyncStatus("❌ Error", "error");
+          setMsg("msgSync", "error", "Error al guardar: " + err.message);
+        }
+      }
+
       // -------------------- Boot --------------------
       const hoyIso = new Date().toISOString().slice(0, 10);
       document.getElementById("fechaInicioLiga").value = hoyIso;
@@ -653,9 +750,21 @@
       document.getElementById("btnGuardarResultado").addEventListener("click", onGuardarResultado);
       document.getElementById("btnResetTotal").addEventListener("click", onResetTotal);
 
+      document.getElementById("btnGuardarUrl").addEventListener("click", onGuardarUrl);
+      document.getElementById("btnCargarDesdeSheets").addEventListener("click", cargarDesdeSheets);
+      document.getElementById("btnGuardarEnSheets").addEventListener("click", guardarEnSheets);
+
+      // Si ya tenía una URL guardada, la mostramos
+      const savedUrl = getScriptUrl();
+      if (savedUrl) {
+        document.getElementById("urlScript").value = savedUrl;
+        setSyncStatus("🔗 Conectado", "ok");
+      }
+
       renderAll();
     </script>
 
   </div>
 </body>
+
 </html>

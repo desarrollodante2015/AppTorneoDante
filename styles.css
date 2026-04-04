@@ -290,3 +290,47 @@ tr:hover td{
   color: rgba(255,255,255,.85);
   font-weight: 650;
 }
+
+/* 15) Google Sheets Connection */
+.card-connection {
+  border-color: rgba(45, 212, 191, .25);
+  background: linear-gradient(180deg, rgba(45, 212, 191, .08), rgba(45, 212, 191, .03));
+}
+
+#urlScript {
+  width: 100%;
+  max-width: 480px;
+}
+
+.btn-sync {
+  border-color: rgba(45, 212, 191, .40) !important;
+  background: linear-gradient(180deg, rgba(45, 212, 191, .18), rgba(45, 212, 191, .08)) !important;
+}
+
+.btn-sync:hover {
+  background: linear-gradient(180deg, rgba(45, 212, 191, .28), rgba(45, 212, 191, .14)) !important;
+}
+
+#btnGuardarUrl {
+  border-color: rgba(124,92,255,.40);
+  background: linear-gradient(180deg, rgba(124,92,255,.18), rgba(124,92,255,.08));
+}
+
+.sync-status {
+  font-size: 13px;
+  font-weight: 650;
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+
+.sync-status.ok { color: var(--accent2); }
+.sync-status.error { color: var(--danger); }
+.sync-status.loading {
+  color: rgba(255, 255, 255, .7);
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .4; }
+}
