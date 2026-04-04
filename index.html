@@ -150,6 +150,57 @@
         </div>
       </div>
 
+      <!-- Paso 7: Equipos -->
+      <div class="wizard-step" data-step="7">
+        <div class="wizard-progress"></div>
+        <h2 class="wizard-question">¿Qué equipos van a jugar?</h2>
+        <div class="wizard-equipo-add">
+          <input type="text" id="wizEquipoNombre" class="wizard-input" placeholder="Nombre del equipo" />
+          <button class="wizard-btn-next" onclick="wizAddEquipo()" style="margin-top:0;">+ Agregar</button>
+        </div>
+        <div id="wizEquiposLista" class="wizard-equipos-lista"></div>
+        <div class="wizard-msg" id="wizMsg7"></div>
+        <div class="wizard-nav">
+          <button class="wizard-btn-back" onclick="wizardBack()">← Atrás</button>
+          <button class="wizard-btn-skip" onclick="wizardSkip()">Hacer después</button>
+          <button class="wizard-btn-next" onclick="wizardNext()">Siguiente →</button>
+        </div>
+      </div>
+
+      <!-- Paso 8: Fixture -->
+      <div class="wizard-step" data-step="8">
+        <div class="wizard-progress"></div>
+        <h2 class="wizard-question">¿Generamos el fixture?</h2>
+        <div id="wizFixtureResumen"></div>
+        <div class="wizard-msg" id="wizMsg8"></div>
+        <div class="wizard-nav">
+          <button class="wizard-btn-back" onclick="wizardBack()">← Atrás</button>
+          <button class="wizard-btn-skip" onclick="wizardSkip()">Generar más tarde</button>
+          <button class="wizard-btn-next wizard-btn-confirm" onclick="wizGenerarFixture()">⚡ Generar Fixture</button>
+        </div>
+      </div>
+
+      <!-- Paso 9: Jugadores -->
+      <div class="wizard-step" data-step="9">
+        <div class="wizard-progress"></div>
+        <h2 class="wizard-question">¿Cargamos los jugadores?</h2>
+        <div class="wizard-jugadores">
+          <select id="wizEquipoSelect" onchange="wizRenderJugadores()"></select>
+          <div id="wizJugadorCounter" class="wizard-jugador-counter"></div>
+          <div class="wizard-jugador-add">
+            <input type="text" id="wizJugadorNombre" class="wizard-input" placeholder="Nombre del jugador" />
+            <button class="wizard-btn-next" onclick="wizAddJugador()" style="margin-top:0;">+ Agregar</button>
+          </div>
+          <div id="wizJugadoresLista" class="wizard-jugadores-lista"></div>
+        </div>
+        <div class="wizard-msg" id="wizMsg9"></div>
+        <div class="wizard-nav">
+          <button class="wizard-btn-back" onclick="wizardBack()">← Atrás</button>
+          <button class="wizard-btn-skip" onclick="wizardSkip()">Hacer después</button>
+          <button class="wizard-btn-next wizard-btn-confirm" onclick="wizardNext()">✓ Terminar</button>
+        </div>
+      </div>
+
     </div>
   </div>
 
@@ -161,7 +212,7 @@
         <h1 id="tituloTorneo">Torneo de Dante</h1>
         <div class="muted">Todo se guarda en el navegador (LocalStorage)</div>
       </div>
-      <button class="chip" id="btnToggleTema" onclick="toggleTema()">🌌 Modo Galaxia</button>
+      <div class="chip">🌌 Modo Galaxia</div>
     </header>
 
     <h2>🔗 Conexión con Google Sheets</h2>
@@ -893,13 +944,16 @@
         modalidad: '',
         clasificados: 4,
         fechaInicio: '',
-        diasEntreFechas: 7
+        diasEntreFechas: 7,
+        equipos: [],
+        jugadores: [],
+        fixtureGenerado: false
       };
 
       function getStepSequence() {
         const steps = [1, 2, 3, 4];
         if (wizardConfig.formato === 'Liga+Playoffs') steps.push(5);
-        steps.push(6);
+        steps.push(6, 7, 8, 9);
         return steps;
       }
 
@@ -920,6 +974,11 @@
             progressEl.textContent = `PASO ${visualIndex + 1} DE ${seq.length}`;
           }
         }
+
+        // Renderizar contenido dinámico por paso
+        if (step === 7) wizRenderEquipos();
+        if (step === 8) wizRenderFixtureResumen();
+        if (step === 9) { wizRenderEquipoSelect(); wizRenderJugadores(); }
       }
 
       function selectOption(el) {
@@ -1013,21 +1072,33 @@
           wizardConfig.clasificados = Number(clas);
         }
 
-        // Paso 6: Duración del torneo
+        // Paso 6: Duración
         if (currentStep === 6) {
           const fecha = document.getElementById('wizFechaInicio').value;
           const dias = Number(document.getElementById('wizDiasEntreFechas').value);
-          if (!fecha) {
-            setWizMsg('wizMsg6', 'Elegí la fecha de inicio');
-            return;
-          }
-          if (isNaN(dias) || dias < 1) {
-            setWizMsg('wizMsg6', 'Los días deben ser 1 o más');
-            return;
-          }
+          if (!fecha) { setWizMsg('wizMsg6', 'Elegí la fecha de inicio'); return; }
+          if (isNaN(dias) || dias < 1) { setWizMsg('wizMsg6', 'Los días deben ser 1 o más'); return; }
           setWizMsg('wizMsg6', '');
           wizardConfig.fechaInicio = fecha;
           wizardConfig.diasEntreFechas = dias;
+        }
+
+        // Paso 7: Equipos
+        if (currentStep === 7) {
+          if (wizardConfig.equipos.length < 2) {
+            setWizMsg('wizMsg7', 'Agregá al menos 2 equipos para continuar, o hace clic en "Hacer después"');
+            return;
+          }
+          setWizMsg('wizMsg7', '');
+        }
+
+        // Paso 8: Fixture (solo se avanza con el botón dedicado)
+        if (currentStep === 8) {
+          // No debería llegar aquí - se avanza con wizGenerarFixture()
+        }
+
+        // Paso 9: Jugadores - Terminar
+        if (currentStep === 9) {
           finishWizard();
           return;
         }
@@ -1048,32 +1119,189 @@
         showStep(currentStep - 1);
       }
 
-      // -------------------- Tema Galaxia / Cielo --------------------
-      function toggleTema() {
-        const body = document.body;
-        const btn = document.getElementById('btnToggleTema');
-        if (body.dataset.theme === 'cielo') {
-          body.dataset.theme = 'galaxia';
-          btn.textContent = '🌌 Modo Galaxia';
-          localStorage.setItem('torneo_dante_tema', 'galaxia');
-        } else {
-          body.dataset.theme = 'cielo';
-          btn.textContent = '☁️ Modo Cielo';
-          localStorage.setItem('torneo_dante_tema', 'cielo');
+      function wizardSkip() {
+        if (currentStep === 7) {
+          // Sin equipos no se puede hacer fixture ni jugadores
+          finishWizard();
+          return;
+        }
+        if (currentStep === 8) {
+          showStep(9);
+          return;
+        }
+        if (currentStep === 9) {
+          finishWizard();
+          return;
         }
       }
 
-      function cargarTema() {
-        const tema = localStorage.getItem('torneo_dante_tema') || 'galaxia';
-        document.body.dataset.theme = tema;
-        const btn = document.getElementById('btnToggleTema');
-        if (btn) {
-          btn.textContent = tema === 'cielo' ? '☁️ Modo Cielo' : '🌌 Modo Galaxia';
+      // ---- Wizard: Equipos ----
+      function wizAddEquipo() {
+        const input = document.getElementById('wizEquipoNombre');
+        const nombre = input.value.trim();
+        if (!nombre) return;
+        if (wizardConfig.equipos.some(e => e.nombre.toLowerCase() === nombre.toLowerCase())) {
+          setWizMsg('wizMsg7', 'Ese equipo ya existe');
+          return;
         }
+        const id = wizardConfig.equipos.length ? Math.max(...wizardConfig.equipos.map(e => e.id)) + 1 : 1;
+        wizardConfig.equipos.push({ id, nombre });
+        input.value = '';
+        setWizMsg('wizMsg7', '');
+        wizRenderEquipos();
+        input.focus();
+      }
+
+      function wizRemoveEquipo(id) {
+        wizardConfig.equipos = wizardConfig.equipos.filter(e => e.id !== id);
+        wizardConfig.jugadores = wizardConfig.jugadores.filter(j => j.equipoId !== id);
+        wizRenderEquipos();
+      }
+
+      function wizRenderEquipos() {
+        const cont = document.getElementById('wizEquiposLista');
+        if (!wizardConfig.equipos.length) {
+          cont.innerHTML = '<div class="muted">Todavía no hay equipos</div>';
+          return;
+        }
+        cont.innerHTML = '';
+        wizardConfig.equipos.forEach(e => {
+          const span = document.createElement('span');
+          span.className = 'badge wizard-badge';
+          span.innerHTML = `${e.nombre} <span class="wizard-badge-x" onclick="wizRemoveEquipo(${e.id})">✕</span>`;
+          cont.appendChild(span);
+        });
+      }
+
+      // ---- Wizard: Fixture ----
+      function wizRenderFixtureResumen() {
+        const cont = document.getElementById('wizFixtureResumen');
+        if (wizardConfig.equipos.length < 2) {
+          cont.innerHTML = '<div class="muted">No hay suficientes equipos para generar un fixture.</div>';
+          return;
+        }
+        if (wizardConfig.fixtureGenerado) {
+          cont.innerHTML = '<div class="wizard-fixture-done">✅ ¡Fixture generado!</div>';
+          return;
+        }
+        const n = wizardConfig.equipos.length;
+        const modalidad = wizardConfig.modalidad === 'idayvuelta' ? 'Ida y vuelta' : 'Solo ida';
+        cont.innerHTML = `
+          <div class="wizard-resumen-card">
+            <div>📊 <b>${n} equipos</b></div>
+            <div>🏆 Formato: <b>${wizardConfig.formato}</b></div>
+            <div>🔄 Modalidad: <b>${modalidad}</b></div>
+            <div>📅 Inicio: <b>${wizardConfig.fechaInicio}</b></div>
+            <div>📆 Cada <b>${wizardConfig.diasEntreFechas}</b> días</div>
+          </div>
+        `;
+      }
+
+      function wizGenerarFixture() {
+        if (wizardConfig.equipos.length < 2) {
+          setWizMsg('wizMsg8', 'Necesitás al menos 2 equipos');
+          return;
+        }
+        wizardConfig.fixtureGenerado = true;
+        setWizMsg('wizMsg8', '');
+        showStep(9);
+      }
+
+      // ---- Wizard: Jugadores ----
+      function wizRenderEquipoSelect() {
+        const sel = document.getElementById('wizEquipoSelect');
+        sel.innerHTML = '';
+        wizardConfig.equipos.forEach(e => {
+          const opt = document.createElement('option');
+          opt.value = e.id;
+          opt.textContent = e.nombre;
+          sel.appendChild(opt);
+        });
+      }
+
+      function wizAddJugador() {
+        const equipoId = Number(document.getElementById('wizEquipoSelect').value);
+        const input = document.getElementById('wizJugadorNombre');
+        const nombre = input.value.trim();
+        if (!equipoId || !nombre) return;
+        const teamPlayers = wizardConfig.jugadores.filter(j => j.equipoId === equipoId);
+        const maxTotal = wizardConfig.titulares + wizardConfig.suplentes;
+        if (teamPlayers.length >= maxTotal) {
+          setWizMsg('wizMsg9', `Máximo ${maxTotal} jugadores por equipo`);
+          return;
+        }
+        const id = wizardConfig.jugadores.length ? Math.max(...wizardConfig.jugadores.map(j => j.id)) + 1 : 1;
+        const tipo = teamPlayers.length < wizardConfig.titulares ? 'titular' : 'suplente';
+        wizardConfig.jugadores.push({ id, nombre, equipoId, tipo });
+        input.value = '';
+        setWizMsg('wizMsg9', '');
+        wizRenderJugadores();
+        input.focus();
+      }
+
+      function wizRemoveJugador(id) {
+        wizardConfig.jugadores = wizardConfig.jugadores.filter(j => j.id !== id);
+        wizRenderJugadores();
+      }
+
+      function wizRenderJugadores() {
+        const equipoId = Number(document.getElementById('wizEquipoSelect').value);
+        const cont = document.getElementById('wizJugadoresLista');
+        const counter = document.getElementById('wizJugadorCounter');
+        const teamPlayers = wizardConfig.jugadores.filter(j => j.equipoId === equipoId);
+        const maxTotal = wizardConfig.titulares + wizardConfig.suplentes;
+        counter.textContent = `${teamPlayers.length} / ${maxTotal} jugadores`;
+        if (!teamPlayers.length) {
+          cont.innerHTML = '<div class="muted">Todavía no hay jugadores en este equipo</div>';
+          return;
+        }
+        cont.innerHTML = '';
+        teamPlayers.forEach(j => {
+          const label = j.tipo === 'titular' ? '⭐' : '🔄';
+          const div = document.createElement('div');
+          div.className = 'wizard-jugador-item';
+          div.innerHTML = `<span>${label} ${j.nombre}</span><span class="wizard-badge-x" onclick="wizRemoveJugador(${j.id})">✕</span>`;
+          cont.appendChild(div);
+        });
       }
 
       function finishWizard() {
-        state.config = { ...wizardConfig };
+        // Guardar config (sin datos temporales del wizard)
+        const { equipos, jugadores, fixtureGenerado, ...configLimpio } = wizardConfig;
+        state.config = configLimpio;
+
+        // Guardar equipos
+        if (equipos.length) {
+          state.equipos = [...equipos];
+        }
+
+        // Guardar jugadores
+        if (jugadores.length) {
+          state.jugadores = [...jugadores];
+        }
+
+        // Generar fixture si fue solicitado
+        if (fixtureGenerado && equipos.length >= 2) {
+          state.partidos = state.partidos.filter(p => (p.fase || 'Liga') !== 'Liga');
+          const ids = equipos.map(e => e.id);
+          const fechas = generarRoundRobin(ids);
+          let partidoId = nextPartidoId();
+          fechas.forEach((matches, idxFecha) => {
+            const fecha = addDays(configLimpio.fechaInicio, idxFecha * configLimpio.diasEntreFechas);
+            matches.forEach(m => {
+              state.partidos.push({
+                id: partidoId++,
+                fase: 'Liga',
+                fecha,
+                localId: m.localId,
+                visitanteId: m.visitanteId,
+                golesLocal: null,
+                golesVisitante: null
+              });
+            });
+          });
+        }
+
         saveState(state);
 
         document.getElementById('wizard').style.display = 'none';
@@ -1148,15 +1376,19 @@
         if (e.key === "Enter") wizardNext();
       });
 
+      document.getElementById("wizEquipoNombre").addEventListener("keydown", (e) => {
+        if (e.key === "Enter") wizAddEquipo();
+      });
+      document.getElementById("wizJugadorNombre").addEventListener("keydown", (e) => {
+        if (e.key === "Enter") wizAddJugador();
+      });
+
       // Si ya tenía una URL guardada, la mostramos
       const savedUrl = getScriptUrl();
       if (savedUrl) {
         document.getElementById("urlScript").value = savedUrl;
         setSyncStatus("🔗 Conectado", "ok");
       }
-
-      // Cargar tema guardado
-      cargarTema();
 
       // Decidir si mostrar wizard o app
       checkWizardOrApp();

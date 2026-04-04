@@ -738,7 +738,155 @@ tr:hover td{
   transform: translateY(-1px);
 }
 
-/* =================== MODO CIELO (Light Theme) =================== */
+/* =================== WIZARD: EQUIPOS, FIXTURE, JUGADORES =================== */
+.wizard-equipo-add {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.wizard-equipo-add .wizard-input {
+  margin-bottom: 0;
+  max-width: 260px;
+}
+
+.wizard-equipos-lista {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 12px;
+  min-height: 36px;
+}
+
+.wizard-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  animation: wizardFadeIn .3s ease;
+}
+
+.wizard-badge-x {
+  cursor: pointer;
+  opacity: .5;
+  font-size: 12px;
+  transition: opacity .15s ease;
+}
+
+.wizard-badge-x:hover {
+  opacity: 1;
+  color: var(--danger);
+}
+
+/* Skip button */
+.wizard-btn-skip {
+  padding: 13px 30px;
+  font-size: 15px;
+  font-weight: 700;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 14px;
+  background: rgba(255,255,255,.03);
+  color: var(--muted);
+  cursor: pointer;
+  transition: all .2s ease;
+}
+
+.wizard-btn-skip:hover {
+  background: rgba(255,255,255,.07);
+  color: var(--text);
+}
+
+/* Fixture resumen */
+.wizard-resumen-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 20px 28px;
+  border: 1px solid rgba(255,255,255,.10);
+  border-radius: 16px;
+  background: rgba(255,255,255,.04);
+  margin-bottom: 16px;
+  text-align: left;
+  font-size: 15px;
+}
+
+.wizard-fixture-done {
+  color: var(--accent2);
+  font-weight: 700;
+  font-size: 16px;
+  margin-bottom: 8px;
+}
+
+/* Jugadores */
+.wizard-jugadores {
+  width: 100%;
+  max-width: 400px;
+  margin-bottom: 12px;
+}
+
+.wizard-jugadores select {
+  width: 100%;
+  margin-bottom: 12px;
+  padding: 12px;
+  font-size: 15px;
+}
+
+.wizard-jugador-add {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.wizard-jugador-add .wizard-input {
+  margin-bottom: 0;
+  flex: 1;
+  max-width: none;
+  text-align: left;
+  font-size: 15px;
+  padding: 12px 16px;
+}
+
+.wizard-jugadores-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.wizard-jugador-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 14px;
+  border-radius: 12px;
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.08);
+  font-size: 14px;
+  animation: wizardFadeIn .3s ease;
+}
+
+.wizard-jugador-counter {
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+
+@media (max-width: 640px) {
+  .wizard-equipo-add {
+    flex-direction: column;
+  }
+
+  .wizard-jugador-add {
+    flex-direction: column;
+  }
+}
+
 body[data-theme="cielo"] {
   --bg0: #dbeafe;
   --bg1: #eff6ff;
