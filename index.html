@@ -244,20 +244,28 @@
 
     <!-- ===== TAB: TABLA DE POSICIONES ===== -->
     <div class="tab-panel active" id="panel-tabla">
+      <div class="tab-header">
+        <h2 class="tab-title">Tabla de Posiciones</h2>
+        <p class="tab-desc">Seguí el rendimiento de cada equipo en tiempo real</p>
+      </div>
       <div id="emptyTabla" class="empty-state">
-        <div class="empty-icon">📊</div>
+        <svg class="empty-svg" viewBox="0 0 80 80"><circle cx="40" cy="40" r="36" stroke="currentColor" stroke-width="5" fill="none"/><circle cx="40" cy="28" r="4" fill="currentColor"/><rect x="37" y="36" width="6" height="20" rx="3" fill="currentColor"/></svg>
         <h3>No hay tabla todavía</h3>
-        <p class="muted">Generá el fixture para ver la tabla de posiciones</p>
+        <p>Generá el fixture para ver las posiciones</p>
       </div>
       <div id="tabla-posiciones"></div>
     </div>
 
     <!-- ===== TAB: PARTIDOS ===== -->
     <div class="tab-panel" id="panel-partidos">
+      <div class="tab-header">
+        <h2 class="tab-title">Partidos</h2>
+        <p class="tab-desc">Fixture completo, resultados y gestión del torneo</p>
+      </div>
       <div id="emptyPartidos" class="empty-state">
-        <div class="empty-icon">📅</div>
+        <svg class="empty-svg" viewBox="0 0 80 80"><circle cx="40" cy="40" r="36" stroke="currentColor" stroke-width="5" fill="none"/><circle cx="40" cy="28" r="4" fill="currentColor"/><rect x="37" y="36" width="6" height="20" rx="3" fill="currentColor"/></svg>
         <h3>No hay partidos todavía</h3>
-        <p class="muted">Cargá equipos y generá el fixture</p>
+        <p>Cargá equipos y generá el fixture para comenzar</p>
       </div>
 
       <!-- Cargar resultado -->
@@ -277,17 +285,17 @@
 
       <!-- Fixture Liga -->
       <div id="seccionLiga" style="display:none;">
-        <h3 class="sectionTitle">Fixture Liga <span class="muted">(fase regular)</span></h3>
+        <h3 class="sectionTitle">Liga <span class="muted">(fase regular)</span></h3>
         <div id="fixture-liga"></div>
       </div>
 
       <!-- Fixture Playoffs -->
       <div id="seccionPlayoffs" style="display:none;">
-        <h3 class="sectionTitle">Fixture Playoffs <span class="muted">(cruces)</span></h3>
+        <h3 class="sectionTitle">Playoffs <span class="muted">(cruces)</span></h3>
         <div id="fixture-playoffs"></div>
       </div>
 
-      <!-- Gestión oculta (genera liga/playoffs) -->
+      <!-- Gestión oculta -->
       <div id="gestionFixture" class="card" style="display:none;margin-top:16px;">
         <h3 style="margin-top:0;">⚙️ Gestión</h3>
         <div class="fila">
@@ -328,7 +336,6 @@
         </div>
       </div>
 
-      <!-- Botón para mostrar gestión -->
       <button class="btn-gestion" id="btnToggleGestion" onclick="document.getElementById('gestionFixture').style.display = document.getElementById('gestionFixture').style.display === 'none' ? 'block' : 'none'">
         ⚙️ Gestión avanzada
       </button>
@@ -336,10 +343,14 @@
 
     <!-- ===== TAB: JUGADORES ===== -->
     <div class="tab-panel" id="panel-jugadores">
+      <div class="tab-header">
+        <h2 class="tab-title">Jugadores</h2>
+        <p class="tab-desc">Planteles y jugadores de cada equipo</p>
+      </div>
       <div id="emptyJugadores" class="empty-state">
-        <div class="empty-icon">👥</div>
+        <svg class="empty-svg" viewBox="0 0 80 80"><circle cx="40" cy="40" r="36" stroke="currentColor" stroke-width="5" fill="none"/><circle cx="40" cy="28" r="4" fill="currentColor"/><rect x="37" y="36" width="6" height="20" rx="3" fill="currentColor"/></svg>
         <h3>No hay jugadores cargados</h3>
-        <p class="muted">Agregá jugadores a tus equipos</p>
+        <p>Agregá jugadores a tus equipos para verlos acá</p>
       </div>
       <div id="jugadoresContent" style="display:none;">
         <div class="card">
@@ -356,10 +367,14 @@
 
     <!-- ===== TAB: ESTADÍSTICAS ===== -->
     <div class="tab-panel" id="panel-estadisticas">
+      <div class="tab-header">
+        <h2 class="tab-title">Estadísticas</h2>
+        <p class="tab-desc">Números y datos del torneo en vivo</p>
+      </div>
       <div id="emptyEstadisticas" class="empty-state">
-        <div class="empty-icon">📈</div>
-        <h3>Estadísticas</h3>
-        <p class="muted">Cargá resultados para ver estadísticas del torneo</p>
+        <svg class="empty-svg" viewBox="0 0 80 80"><circle cx="40" cy="40" r="36" stroke="currentColor" stroke-width="5" fill="none"/><circle cx="40" cy="28" r="4" fill="currentColor"/><rect x="37" y="36" width="6" height="20" rx="3" fill="currentColor"/></svg>
+        <h3>Todavía no hay datos</h3>
+        <p>Cargá resultados de partidos para ver estadísticas</p>
       </div>
       <div id="estadisticasContent" style="display:none;"></div>
     </div>

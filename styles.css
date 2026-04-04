@@ -1,4 +1,4 @@
-﻿/* =========================
+/* =========================
    Torneo de Dante â€” Tema Galaxia Minimal
    ========================= */
 
@@ -936,32 +936,62 @@ tr:hover td{
   to { opacity: 1; transform: translateY(0); }
 }
 
+/* =================== TAB HEADERS =================== */
+.tab-header {
+  margin-bottom: 24px;
+}
+
+.tab-title {
+  margin: 0 0 6px;
+  font-size: 28px;
+  font-weight: 800;
+  background: linear-gradient(135deg, rgba(255,255,255,.95), var(--accent));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -.02em;
+}
+
+.tab-desc {
+  margin: 0;
+  font-size: 14px;
+  color: var(--muted);
+  font-weight: 500;
+}
+
 /* =================== EMPTY STATES =================== */
 .empty-state {
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  padding: 60px 20px;
-  background: linear-gradient(180deg, var(--card2), var(--card));
+  padding: 48px 24px;
+  background: linear-gradient(180deg, rgba(255,255,255,.035), rgba(255,255,255,.015));
   border: 1px solid var(--border);
   border-radius: 20px;
 }
 
-.empty-icon {
-  font-size: 56px;
-  margin-bottom: 16px;
-  opacity: .7;
+.empty-svg {
+  width: 64px;
+  height: 64px;
+  color: var(--muted);
+  opacity: .45;
+  margin-bottom: 20px;
 }
 
 .empty-state h3 {
   margin: 0 0 8px;
-  font-size: 20px;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
 }
 
 .empty-state p {
   margin: 0;
-  max-width: 300px;
+  max-width: 280px;
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.5;
 }
 
 /* =================== MANAGEMENT BUTTON =================== */
