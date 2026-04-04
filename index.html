@@ -11,11 +11,132 @@
 </head>
 
 <body>
-  <div class="app">
+
+  <!-- ==================== WIZARD ==================== -->
+  <div id="wizard">
+    <div class="wizard-container">
+
+      <!-- Paso 0: Bienvenida -->
+      <div class="wizard-step active" data-step="0">
+        <div class="wizard-icon">⚽</div>
+        <h1 class="wizard-title">Crea tu Torneo</h1>
+        <p class="wizard-subtitle">Configurá tu torneo en pocos pasos</p>
+        <button id="btnEmpezar" class="wizard-btn-primary">Crea tu Torneo</button>
+      </div>
+
+      <!-- Paso 1: Nombre -->
+      <div class="wizard-step" data-step="1">
+        <div class="wizard-progress">Paso 1 de <span class="wizard-total">5</span></div>
+        <h2 class="wizard-question">¿Cómo se va a llamar tu torneo?</h2>
+        <input type="text" id="wizNombre" class="wizard-input" placeholder="Nombre del Torneo" />
+        <div class="wizard-msg" id="wizMsg1"></div>
+        <div class="wizard-nav">
+          <button class="wizard-btn-back" onclick="wizardBack()">← Atrás</button>
+          <button class="wizard-btn-next" onclick="wizardNext()">Siguiente →</button>
+        </div>
+      </div>
+
+      <!-- Paso 2: Formato -->
+      <div class="wizard-step" data-step="2">
+        <div class="wizard-progress">Paso 2 de <span class="wizard-total">5</span></div>
+        <h2 class="wizard-question">¿Cuál va a ser el formato?</h2>
+        <p class="wizard-hint">3 opciones para elegir</p>
+        <div class="wizard-options">
+          <div class="wizard-option" data-value="Liga" onclick="selectOption(this)">
+            <div class="wizard-option-icon">🏆</div>
+            <div class="wizard-option-title">Liga</div>
+            <div class="wizard-option-desc">Todos contra todos</div>
+          </div>
+          <div class="wizard-option" data-value="Eliminacion" onclick="selectOption(this)">
+            <div class="wizard-option-icon">⚔️</div>
+            <div class="wizard-option-title">Eliminación directa</div>
+            <div class="wizard-option-desc">Perdés y te vas</div>
+          </div>
+          <div class="wizard-option" data-value="Liga+Playoffs" onclick="selectOption(this)">
+            <div class="wizard-option-icon">🥇</div>
+            <div class="wizard-option-title">Liga + Playoffs</div>
+            <div class="wizard-option-desc">Todos contra todos + cruces finales</div>
+          </div>
+        </div>
+        <div class="wizard-msg" id="wizMsg2"></div>
+        <div class="wizard-nav">
+          <button class="wizard-btn-back" onclick="wizardBack()">← Atrás</button>
+          <button class="wizard-btn-next" onclick="wizardNext()">Siguiente →</button>
+        </div>
+      </div>
+
+      <!-- Paso 3: Jugadores -->
+      <div class="wizard-step" data-step="3">
+        <div class="wizard-progress">Paso 3 de <span class="wizard-total">5</span></div>
+        <h2 class="wizard-question">¿Cuántos jugadores va a tener cada equipo?</h2>
+        <div class="wizard-players">
+          <div class="wizard-player-field">
+            <label>Titulares</label>
+            <input type="number" id="wizTitulares" min="1" max="11" value="11" />
+            <span class="wizard-field-hint">máximo 11</span>
+          </div>
+          <div class="wizard-player-field">
+            <label>Suplentes</label>
+            <input type="number" id="wizSuplentes" min="0" max="10" value="5" />
+            <span class="wizard-field-hint">máximo 10</span>
+          </div>
+        </div>
+        <div class="wizard-msg" id="wizMsg3"></div>
+        <div class="wizard-nav">
+          <button class="wizard-btn-back" onclick="wizardBack()">← Atrás</button>
+          <button class="wizard-btn-next" onclick="wizardNext()">Siguiente →</button>
+        </div>
+      </div>
+
+      <!-- Paso 4: Ida y vuelta -->
+      <div class="wizard-step" data-step="4">
+        <div class="wizard-progress">Paso 4 de <span class="wizard-total">5</span></div>
+        <h2 class="wizard-question">¿Cada equipo juega 1 o 2 veces contra los demás?</h2>
+        <div class="wizard-options">
+          <div class="wizard-option" data-value="ida" onclick="selectOption(this)">
+            <div class="wizard-option-icon">1️⃣</div>
+            <div class="wizard-option-title">Solo ida</div>
+            <div class="wizard-option-desc">Se enfrentan una vez</div>
+          </div>
+          <div class="wizard-option" data-value="idayvuelta" onclick="selectOption(this)">
+            <div class="wizard-option-icon">🔄</div>
+            <div class="wizard-option-title">Ida y vuelta</div>
+            <div class="wizard-option-desc">Se enfrentan dos veces (local y visitante)</div>
+          </div>
+        </div>
+        <div class="wizard-msg" id="wizMsg4"></div>
+        <div class="wizard-nav">
+          <button class="wizard-btn-back" onclick="wizardBack()">← Atrás</button>
+          <button id="btnStep4Next" class="wizard-btn-next" onclick="wizardNext()">Siguiente →</button>
+        </div>
+      </div>
+
+      <!-- Paso 5: Clasificados a playoffs (solo Liga+Playoffs) -->
+      <div class="wizard-step" data-step="5">
+        <div class="wizard-progress">Paso 5 de 5</div>
+        <h2 class="wizard-question">¿Cuántos equipos clasifican a playoffs?</h2>
+        <div class="wizard-options wizard-options-row">
+          <div class="wizard-option wizard-option-small" data-value="2" onclick="selectOption(this)">2</div>
+          <div class="wizard-option wizard-option-small" data-value="4" onclick="selectOption(this)">4</div>
+          <div class="wizard-option wizard-option-small" data-value="8" onclick="selectOption(this)">8</div>
+          <div class="wizard-option wizard-option-small" data-value="16" onclick="selectOption(this)">16</div>
+        </div>
+        <div class="wizard-msg" id="wizMsg5"></div>
+        <div class="wizard-nav">
+          <button class="wizard-btn-back" onclick="wizardBack()">← Atrás</button>
+          <button class="wizard-btn-next wizard-btn-confirm" onclick="wizardNext()">✓ Confirmar</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ==================== APP PRINCIPAL ==================== -->
+  <div class="app" id="mainApp">
 
     <header class="top">
       <div>
-        <h1>Torneo de Dante</h1>
+        <h1 id="tituloTorneo">Torneo de Dante</h1>
         <div class="muted">Todo se guarda en el navegador (LocalStorage)</div>
       </div>
       <div class="chip">Modo Galaxia</div>
@@ -732,6 +853,172 @@
         }
       }
 
+      // -------------------- Wizard --------------------
+      let currentStep = 0;
+      const wizardConfig = {
+        nombre: '',
+        formato: '',
+        titulares: 11,
+        suplentes: 5,
+        modalidad: '',
+        clasificados: 4
+      };
+
+      function showStep(step) {
+        document.querySelectorAll('.wizard-step').forEach(s => {
+          s.classList.remove('active');
+        });
+        const target = document.querySelector(`.wizard-step[data-step="${step}"]`);
+        if (target) target.classList.add('active');
+        currentStep = step;
+
+        // Update total steps display
+        const total = wizardConfig.formato === 'Liga+Playoffs' ? 5 : 4;
+        document.querySelectorAll('.wizard-total').forEach(el => {
+          el.textContent = total;
+        });
+
+        // Update step 4 button text
+        const btn4 = document.getElementById('btnStep4Next');
+        if (wizardConfig.formato && wizardConfig.formato !== 'Liga+Playoffs') {
+          btn4.textContent = '✓ Confirmar';
+          btn4.classList.add('wizard-btn-confirm');
+        } else {
+          btn4.textContent = 'Siguiente →';
+          btn4.classList.remove('wizard-btn-confirm');
+        }
+      }
+
+      function selectOption(el) {
+        const parent = el.closest('.wizard-options');
+        parent.querySelectorAll('.wizard-option').forEach(opt => {
+          opt.classList.remove('selected');
+        });
+        el.classList.add('selected');
+      }
+
+      function getSelectedValue(step) {
+        const stepEl = document.querySelector(`.wizard-step[data-step="${step}"]`);
+        const selected = stepEl.querySelector('.wizard-option.selected');
+        return selected ? selected.dataset.value : null;
+      }
+
+      function setWizMsg(id, texto) {
+        const el = document.getElementById(id);
+        el.textContent = texto;
+        el.style.display = texto ? 'block' : 'none';
+      }
+
+      function wizardNext() {
+        // Paso 1: Nombre
+        if (currentStep === 1) {
+          const nombre = document.getElementById('wizNombre').value.trim();
+          if (!nombre) {
+            setWizMsg('wizMsg1', 'Escribí un nombre para tu torneo');
+            document.getElementById('wizNombre').focus();
+            return;
+          }
+          setWizMsg('wizMsg1', '');
+          wizardConfig.nombre = nombre;
+        }
+
+        // Paso 2: Formato
+        if (currentStep === 2) {
+          const formato = getSelectedValue(2);
+          if (!formato) {
+            setWizMsg('wizMsg2', 'Elegí un formato');
+            return;
+          }
+          setWizMsg('wizMsg2', '');
+          wizardConfig.formato = formato;
+        }
+
+        // Paso 3: Jugadores
+        if (currentStep === 3) {
+          const tit = Number(document.getElementById('wizTitulares').value);
+          const sup = Number(document.getElementById('wizSuplentes').value);
+          if (isNaN(tit) || tit < 1 || tit > 11) {
+            setWizMsg('wizMsg3', 'Titulares: entre 1 y 11');
+            document.getElementById('wizTitulares').focus();
+            return;
+          }
+          if (isNaN(sup) || sup < 0 || sup > 10) {
+            setWizMsg('wizMsg3', 'Suplentes: entre 0 y 10');
+            document.getElementById('wizSuplentes').focus();
+            return;
+          }
+          setWizMsg('wizMsg3', '');
+          wizardConfig.titulares = tit;
+          wizardConfig.suplentes = sup;
+        }
+
+        // Paso 4: Ida y vuelta
+        if (currentStep === 4) {
+          const mod = getSelectedValue(4);
+          if (!mod) {
+            setWizMsg('wizMsg4', 'Elegí una opción');
+            return;
+          }
+          setWizMsg('wizMsg4', '');
+          wizardConfig.modalidad = mod;
+
+          // Si NO es Liga+Playoffs, termina acá
+          if (wizardConfig.formato !== 'Liga+Playoffs') {
+            finishWizard();
+            return;
+          }
+        }
+
+        // Paso 5: Clasificados
+        if (currentStep === 5) {
+          const clas = getSelectedValue(5);
+          if (!clas) {
+            setWizMsg('wizMsg5', 'Elegí cuántos equipos clasifican');
+            return;
+          }
+          setWizMsg('wizMsg5', '');
+          wizardConfig.clasificados = Number(clas);
+          finishWizard();
+          return;
+        }
+
+        showStep(currentStep + 1);
+      }
+
+      function wizardBack() {
+        if (currentStep <= 1) {
+          showStep(0);
+          return;
+        }
+        showStep(currentStep - 1);
+      }
+
+      function finishWizard() {
+        state.config = { ...wizardConfig };
+        saveState(state);
+
+        document.getElementById('wizard').style.display = 'none';
+        document.getElementById('mainApp').style.display = 'block';
+
+        // Poner el nombre del torneo en el título
+        document.getElementById('tituloTorneo').textContent = state.config.nombre;
+
+        renderAll();
+      }
+
+      function checkWizardOrApp() {
+        if (state.config && state.config.nombre) {
+          // Ya tiene torneo configurado, ir directo a la app
+          document.getElementById('wizard').style.display = 'none';
+          document.getElementById('mainApp').style.display = 'block';
+          document.getElementById('tituloTorneo').textContent = state.config.nombre;
+        } else {
+          // Primera vez, mostrar wizard
+          document.getElementById('wizard').style.display = 'flex';
+          document.getElementById('mainApp').style.display = 'none';
+        }
+      }
+
       // -------------------- Boot --------------------
       const hoyIso = new Date().toISOString().slice(0, 10);
       document.getElementById("fechaInicioLiga").value = hoyIso;
@@ -754,6 +1041,14 @@
       document.getElementById("btnCargarDesdeSheets").addEventListener("click", cargarDesdeSheets);
       document.getElementById("btnGuardarEnSheets").addEventListener("click", guardarEnSheets);
 
+      // Wizard: botón empezar
+      document.getElementById("btnEmpezar").addEventListener("click", () => showStep(1));
+
+      // Enter en el campo nombre avanza al siguiente paso
+      document.getElementById("wizNombre").addEventListener("keydown", (e) => {
+        if (e.key === "Enter") wizardNext();
+      });
+
       // Si ya tenía una URL guardada, la mostramos
       const savedUrl = getScriptUrl();
       if (savedUrl) {
@@ -761,6 +1056,8 @@
         setSyncStatus("🔗 Conectado", "ok");
       }
 
+      // Decidir si mostrar wizard o app
+      checkWizardOrApp();
       renderAll();
     </script>
 
