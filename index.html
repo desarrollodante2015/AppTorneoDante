@@ -210,14 +210,17 @@
     <header class="top">
       <div>
         <h1 id="tituloTorneo">Torneo de Dante</h1>
-        <div class="muted">Todo se guarda en el navegador (LocalStorage)</div>
+        <div class="muted" id="subtituloTorneo"></div>
       </div>
-      <div class="chip">🌌 Modo Galaxia</div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <button class="chip" onclick="document.getElementById('panelSync').classList.toggle('oculto')">☁️ Sync</button>
+        <button class="chip chip-danger" id="btnResetTotal" title="Borra TODO lo guardado">🗑️ Reset</button>
+      </div>
     </header>
 
-    <h2>🔗 Conexión con Google Sheets</h2>
-    <div class="card card-connection">
-      <div class="muted">Conectá tu app con una hoja de Google para guardar los datos en la nube ☁️</div>
+    <!-- Panel sync colapsable -->
+    <div id="panelSync" class="card card-connection oculto">
+      <div class="muted">Conectá con Google Sheets para guardar en la nube</div>
       <div class="fila" style="margin-top:10px;">
         <label for="urlScript">URL del Script:</label>
         <input id="urlScript" type="text" placeholder="Pegá acá la URL del Google Apps Script..." />
@@ -231,101 +234,136 @@
       <div id="msgSync" style="margin-top:10px;"></div>
     </div>
 
-    <h2>1) Equipos</h2>
-    <div class="card">
-      <div class="fila">
-        <label for="equipoNuevo">Agregar equipo:</label>
-        <input id="equipoNuevo" type="text" placeholder="Ej: Tigres" />
-        <button id="btnAgregarEquipo">Agregar</button>
-        <button id="btnBorrarEquipos">Borrar equipos</button>
+    <!-- ===== PESTAÑAS ===== -->
+    <nav class="tabs" id="navTabs">
+      <button class="tab active" data-tab="tabla" onclick="cambiarTab('tabla')">📊 Tabla</button>
+      <button class="tab" data-tab="partidos" onclick="cambiarTab('partidos')">📅 Partidos</button>
+      <button class="tab" data-tab="jugadores" onclick="cambiarTab('jugadores')">👥 Jugadores</button>
+      <button class="tab" data-tab="estadisticas" onclick="cambiarTab('estadisticas')">📈 Estadísticas</button>
+    </nav>
+
+    <!-- ===== TAB: TABLA DE POSICIONES ===== -->
+    <div class="tab-panel active" id="panel-tabla">
+      <div id="emptyTabla" class="empty-state">
+        <div class="empty-icon">📊</div>
+        <h3>No hay tabla todavía</h3>
+        <p class="muted">Generá el fixture para ver la tabla de posiciones</p>
       </div>
-
-      <div class="fila" style="margin-top:10px;">
-        <div class="muted">Equipos cargados:</div>
-        <div id="listaEquiposBadges"></div>
-      </div>
-
-      <div id="msgEquipos" style="margin-top:10px;"></div>
-    </div>
-
-    <div id="seccionLiga">
-    <h2>2) Generar fixture de Liga (todos contra todos)</h2>
-    <div class="card">
-      <div class="fila">
-        <label for="fechaInicioLiga">Fecha inicio:</label>
-        <input id="fechaInicioLiga" type="date" />
-
-        <label for="diasPorFechaLiga">Días entre fechas:</label>
-        <input id="diasPorFechaLiga" type="number" min="1" step="1" value="7" />
-
-        <button id="btnGenerarLiga">Generar Liga</button>
-        <button id="btnBorrarLiga">Borrar Liga</button>
-      </div>
-      <div class="muted" style="margin-top:8px;">
-        Si la cantidad de equipos es impar, se agrega "DESCANSA" automáticamente.
-      </div>
-      <div id="msgLiga" style="margin-top:10px;"></div>
-    </div>
-    </div>
-
-    <div id="seccionPlayoffs">
-    <h2>3) Playoffs (cruces por posiciones)</h2>
-    <div class="card">
-      <div class="fila">
-        <label for="cantidadPlayoffs">Equipos a clasificar (2/4/8/16):</label>
-        <input id="cantidadPlayoffs" type="number" min="2" step="2" value="4" />
-
-        <label for="fechaInicioPO">Fecha inicio Playoffs:</label>
-        <input id="fechaInicioPO" type="date" />
-
-        <label for="diasEntreRondas">Días entre rondas:</label>
-        <input id="diasEntreRondas" type="number" min="1" step="1" value="7" />
-
-        <button id="btnGenerarPlayoffs">Generar Playoffs</button>
-        <button id="btnBorrarPlayoffs">Borrar Playoffs</button>
-        <button id="btnSiguienteRonda">Generar siguiente ronda</button>
-      </div>
-
-      <div class="muted" style="margin-top:8px;">
-        Se arma: 1 vs N, 2 vs N-1, 3 vs N-2... según la tabla de posiciones actual.
-      </div>
-      <div id="msgPO" style="margin-top:10px;"></div>
-    </div>
-    </div>
-
-    <h2>4) Cargar resultado (Liga o Playoffs)</h2>
-    <div class="card">
-      <div class="fila">
-        <label for="selectPartido">Partido:</label>
-        <select id="selectPartido"></select>
-
-        <label for="gLocal">Goles Local:</label>
-        <input id="gLocal" type="number" min="0" step="1" value="0" />
-
-        <label for="gVisit">Goles Visitante:</label>
-        <input id="gVisit" type="number" min="0" step="1" value="0" />
-
-        <button id="btnGuardarResultado">Guardar</button>
-        <button id="btnResetTotal" title="Borra TODO lo guardado">Reset total</button>
-      </div>
-      <div id="msgRes" style="margin-top:10px;"></div>
-    </div>
-
-    <div id="seccionTablaLiga">
-    <h2>Tabla de posiciones (solo Liga)</h2>
-    <div class="card">
-      <div class="muted">Se calcula con los partidos de Liga que ya tienen goles cargados.</div>
       <div id="tabla-posiciones"></div>
     </div>
 
-    <h2 class="sectionTitle">Fixture Liga <span class="muted">(fase regular)</span></h2>
-    <div id="fixture-liga"></div>
+    <!-- ===== TAB: PARTIDOS ===== -->
+    <div class="tab-panel" id="panel-partidos">
+      <div id="emptyPartidos" class="empty-state">
+        <div class="empty-icon">📅</div>
+        <h3>No hay partidos todavía</h3>
+        <p class="muted">Cargá equipos y generá el fixture</p>
+      </div>
+
+      <!-- Cargar resultado -->
+      <div id="seccionResultado" class="card" style="display:none;">
+        <h3 style="margin-top:0;">⚽ Cargar resultado</h3>
+        <div class="fila">
+          <label for="selectPartido">Partido:</label>
+          <select id="selectPartido"></select>
+          <label for="gLocal">Local:</label>
+          <input id="gLocal" type="number" min="0" step="1" value="0" style="width:60px;" />
+          <label for="gVisit">Visitante:</label>
+          <input id="gVisit" type="number" min="0" step="1" value="0" style="width:60px;" />
+          <button id="btnGuardarResultado">Guardar</button>
+        </div>
+        <div id="msgRes" style="margin-top:10px;"></div>
+      </div>
+
+      <!-- Fixture Liga -->
+      <div id="seccionLiga" style="display:none;">
+        <h3 class="sectionTitle">Fixture Liga <span class="muted">(fase regular)</span></h3>
+        <div id="fixture-liga"></div>
+      </div>
+
+      <!-- Fixture Playoffs -->
+      <div id="seccionPlayoffs" style="display:none;">
+        <h3 class="sectionTitle">Fixture Playoffs <span class="muted">(cruces)</span></h3>
+        <div id="fixture-playoffs"></div>
+      </div>
+
+      <!-- Gestión oculta (genera liga/playoffs) -->
+      <div id="gestionFixture" class="card" style="display:none;margin-top:16px;">
+        <h3 style="margin-top:0;">⚙️ Gestión</h3>
+        <div class="fila">
+          <label>Equipos:</label>
+          <input id="equipoNuevo" type="text" placeholder="Agregar equipo" />
+          <button id="btnAgregarEquipo">Agregar</button>
+          <button id="btnBorrarEquipos">Borrar equipos</button>
+        </div>
+        <div class="fila" style="margin-top:8px;">
+          <div id="listaEquiposBadges"></div>
+        </div>
+        <div id="msgEquipos" style="margin-top:8px;"></div>
+        <hr style="border-color:rgba(255,255,255,.08);margin:12px 0;">
+        <div id="seccionLigaGen">
+          <div class="fila">
+            <label for="fechaInicioLiga">Fecha inicio:</label>
+            <input id="fechaInicioLiga" type="date" />
+            <label for="diasPorFechaLiga">Días entre fechas:</label>
+            <input id="diasPorFechaLiga" type="number" min="1" step="1" value="7" style="width:80px;" />
+            <button id="btnGenerarLiga">Generar Liga</button>
+            <button id="btnBorrarLiga">Borrar Liga</button>
+          </div>
+          <div id="msgLiga" style="margin-top:8px;"></div>
+        </div>
+        <div id="seccionPlayoffsGen" style="margin-top:10px;">
+          <div class="fila">
+            <label for="cantidadPlayoffs">Clasifican:</label>
+            <input id="cantidadPlayoffs" type="number" min="2" step="2" value="4" style="width:60px;" />
+            <label for="fechaInicioPO">Fecha PO:</label>
+            <input id="fechaInicioPO" type="date" />
+            <label for="diasEntreRondas">Días:</label>
+            <input id="diasEntreRondas" type="number" min="1" step="1" value="7" style="width:60px;" />
+            <button id="btnGenerarPlayoffs">Generar Playoffs</button>
+            <button id="btnBorrarPlayoffs">Borrar Playoffs</button>
+            <button id="btnSiguienteRonda">Sig. ronda</button>
+          </div>
+          <div id="msgPO" style="margin-top:8px;"></div>
+        </div>
+      </div>
+
+      <!-- Botón para mostrar gestión -->
+      <button class="btn-gestion" id="btnToggleGestion" onclick="document.getElementById('gestionFixture').style.display = document.getElementById('gestionFixture').style.display === 'none' ? 'block' : 'none'">
+        ⚙️ Gestión avanzada
+      </button>
     </div>
 
-    <div id="seccionFixturePlayoffs">
-    <h2 class="sectionTitle">Fixture Playoffs <span class="muted">(cruces)</span></h2>
-    <div id="fixture-playoffs"></div>
+    <!-- ===== TAB: JUGADORES ===== -->
+    <div class="tab-panel" id="panel-jugadores">
+      <div id="emptyJugadores" class="empty-state">
+        <div class="empty-icon">👥</div>
+        <h3>No hay jugadores cargados</h3>
+        <p class="muted">Agregá jugadores a tus equipos</p>
+      </div>
+      <div id="jugadoresContent" style="display:none;">
+        <div class="card">
+          <div class="fila" style="gap:10px;flex-wrap:wrap;">
+            <select id="selEquipoJugadores" onchange="renderJugadoresTab()" style="min-width:160px;"></select>
+            <input id="nuevoJugadorNombre" type="text" placeholder="Nombre del jugador" />
+            <button id="btnAddJugadorTab" onclick="addJugadorTab()">+ Agregar</button>
+          </div>
+          <div id="jugadorCounterTab" class="muted" style="margin-top:8px;"></div>
+        </div>
+        <div id="jugadoresListaTab" style="margin-top:12px;"></div>
+      </div>
     </div>
+
+    <!-- ===== TAB: ESTADÍSTICAS ===== -->
+    <div class="tab-panel" id="panel-estadisticas">
+      <div id="emptyEstadisticas" class="empty-state">
+        <div class="empty-icon">📈</div>
+        <h3>Estadísticas</h3>
+        <p class="muted">Cargá resultados para ver estadísticas del torneo</p>
+      </div>
+      <div id="estadisticasContent" style="display:none;"></div>
+    </div>
+
 
     <script>
       // -------------------- Persistencia --------------------
@@ -592,6 +630,7 @@
         renderTabla();
         renderFixture("fixture-liga", "Liga");
         renderFixture("fixture-playoffs", "Playoffs");
+        if (typeof actualizarEmptyStates === 'function') actualizarEmptyStates();
       }
 
       // -------------------- Acciones: Equipos --------------------
@@ -1303,37 +1342,150 @@
 
         // Poner el nombre del torneo en el título
         document.getElementById('tituloTorneo').textContent = state.config.nombre;
+        document.getElementById('subtituloTorneo').textContent = `${state.config.formato} • ${state.config.modalidad === 'idayvuelta' ? 'Ida y vuelta' : 'Solo ida'}`;
 
         aplicarFormatoSecciones();
+        actualizarEmptyStates();
         renderAll();
       }
 
       // Muestra/oculta secciones según el formato del torneo
       function aplicarFormatoSecciones() {
         if (!state.config) return;
-
         const formato = state.config.formato;
-
-        // Secciones de Liga (fixture + tabla)
         const mostrarLiga = (formato === 'Liga' || formato === 'Liga+Playoffs');
-        document.getElementById('seccionLiga').style.display = mostrarLiga ? '' : 'none';
-        document.getElementById('seccionTablaLiga').style.display = mostrarLiga ? '' : 'none';
-
-        // Secciones de Playoffs
         const mostrarPlayoffs = (formato === 'Eliminacion' || formato === 'Liga+Playoffs');
+        document.getElementById('seccionLiga').style.display = mostrarLiga ? '' : 'none';
         document.getElementById('seccionPlayoffs').style.display = mostrarPlayoffs ? '' : 'none';
-        document.getElementById('seccionFixturePlayoffs').style.display = mostrarPlayoffs ? '' : 'none';
+        // Gestión avanzada - mostrar/ocultar secciones
+        const ligaGen = document.getElementById('seccionLigaGen');
+        const poGen = document.getElementById('seccionPlayoffsGen');
+        if (ligaGen) ligaGen.style.display = mostrarLiga ? '' : 'none';
+        if (poGen) poGen.style.display = mostrarPlayoffs ? '' : 'none';
+      }
+
+      // ---- Pestañas ----
+      function cambiarTab(tabId) {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+        document.querySelector(`.tab[data-tab="${tabId}"]`).classList.add('active');
+        document.getElementById(`panel-${tabId}`).classList.add('active');
+      }
+
+      // ---- Empty States ----
+      function actualizarEmptyStates() {
+        const tienePartidos = state.partidos && state.partidos.length > 0;
+        const tieneJugadores = state.jugadores && state.jugadores.length > 0;
+        const tieneEquipos = state.equipos && state.equipos.length > 0;
+        const tieneResultados = state.partidos && state.partidos.some(p => p.golesLocal !== null);
+
+        // Tabla
+        document.getElementById('emptyTabla').style.display = tienePartidos ? 'none' : '';
+        document.getElementById('tabla-posiciones').style.display = tienePartidos ? '' : 'none';
+
+        // Partidos
+        document.getElementById('emptyPartidos').style.display = tienePartidos ? 'none' : '';
+        document.getElementById('seccionResultado').style.display = tienePartidos ? '' : 'none';
+
+        // Jugadores
+        document.getElementById('emptyJugadores').style.display = (tieneEquipos) ? 'none' : '';
+        document.getElementById('jugadoresContent').style.display = (tieneEquipos) ? '' : 'none';
+        if (tieneEquipos) populateEquipoSelectTab();
+
+        // Estadísticas
+        document.getElementById('emptyEstadisticas').style.display = tieneResultados ? 'none' : '';
+        document.getElementById('estadisticasContent').style.display = tieneResultados ? '' : 'none';
+        if (tieneResultados) renderEstadisticas();
+      }
+
+      // ---- Tab Jugadores ----
+      function populateEquipoSelectTab() {
+        const sel = document.getElementById('selEquipoJugadores');
+        const current = sel.value;
+        sel.innerHTML = '';
+        state.equipos.forEach(e => {
+          const opt = document.createElement('option');
+          opt.value = e.id;
+          opt.textContent = e.nombre;
+          sel.appendChild(opt);
+        });
+        if (current) sel.value = current;
+        renderJugadoresTab();
+      }
+
+      function renderJugadoresTab() {
+        const equipoId = Number(document.getElementById('selEquipoJugadores').value);
+        const cont = document.getElementById('jugadoresListaTab');
+        const counter = document.getElementById('jugadorCounterTab');
+        if (!state.jugadores) state.jugadores = [];
+        const jugadores = state.jugadores.filter(j => j.equipoId === equipoId);
+        const maxTotal = (state.config ? state.config.titulares + state.config.suplentes : 16);
+        counter.textContent = `${jugadores.length} / ${maxTotal} jugadores`;
+        if (!jugadores.length) {
+          cont.innerHTML = '<div class="card" style="text-align:center;"><div class="muted">No hay jugadores en este equipo todavía</div></div>';
+          return;
+        }
+        let html = '<div class="card">';
+        jugadores.forEach(j => {
+          const icon = j.tipo === 'titular' ? '⭐' : '🔄';
+          html += `<div class="wizard-jugador-item"><span>${icon} ${j.nombre}</span><span class="wizard-badge-x" onclick="removeJugadorTab(${j.id})">✕</span></div>`;
+        });
+        html += '</div>';
+        cont.innerHTML = html;
+      }
+
+      function addJugadorTab() {
+        const equipoId = Number(document.getElementById('selEquipoJugadores').value);
+        const input = document.getElementById('nuevoJugadorNombre');
+        const nombre = input.value.trim();
+        if (!equipoId || !nombre) return;
+        if (!state.jugadores) state.jugadores = [];
+        const teamPlayers = state.jugadores.filter(j => j.equipoId === equipoId);
+        const maxTotal = (state.config ? state.config.titulares + state.config.suplentes : 16);
+        if (teamPlayers.length >= maxTotal) return;
+        const id = state.jugadores.length ? Math.max(...state.jugadores.map(j => j.id)) + 1 : 1;
+        const titMax = state.config ? state.config.titulares : 11;
+        const tipo = teamPlayers.length < titMax ? 'titular' : 'suplente';
+        state.jugadores.push({ id, nombre, equipoId, tipo });
+        saveState(state);
+        input.value = '';
+        renderJugadoresTab();
+        input.focus();
+      }
+
+      function removeJugadorTab(id) {
+        state.jugadores = state.jugadores.filter(j => j.id !== id);
+        saveState(state);
+        renderJugadoresTab();
+      }
+
+      // ---- Estadísticas básicas ----
+      function renderEstadisticas() {
+        const cont = document.getElementById('estadisticasContent');
+        const jugados = state.partidos.filter(p => p.golesLocal !== null);
+        const totalGoles = jugados.reduce((s, p) => s + (p.golesLocal || 0) + (p.golesVisitante || 0), 0);
+        const pendientes = state.partidos.filter(p => p.golesLocal === null).length;
+        cont.innerHTML = `
+          <div class="card">
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:16px;text-align:center;">
+              <div><div style="font-size:32px;font-weight:800;">${jugados.length}</div><div class="muted">Partidos jugados</div></div>
+              <div><div style="font-size:32px;font-weight:800;">${pendientes}</div><div class="muted">Pendientes</div></div>
+              <div><div style="font-size:32px;font-weight:800;">${totalGoles}</div><div class="muted">Goles totales</div></div>
+              <div><div style="font-size:32px;font-weight:800;">${jugados.length ? (totalGoles / jugados.length).toFixed(1) : 0}</div><div class="muted">Goles / partido</div></div>
+            </div>
+          </div>
+        `;
       }
 
       function checkWizardOrApp() {
         if (state.config && state.config.nombre) {
-          // Ya tiene torneo configurado, ir directo a la app
           document.getElementById('wizard').style.display = 'none';
           document.getElementById('mainApp').style.display = 'block';
           document.getElementById('tituloTorneo').textContent = state.config.nombre;
+          document.getElementById('subtituloTorneo').textContent = `${state.config.formato} • ${state.config.modalidad === 'idayvuelta' ? 'Ida y vuelta' : 'Solo ida'}`;
           aplicarFormatoSecciones();
+          actualizarEmptyStates();
         } else {
-          // Primera vez, mostrar wizard
           document.getElementById('wizard').style.display = 'flex';
           document.getElementById('mainApp').style.display = 'none';
         }
@@ -1375,6 +1527,9 @@
       });
       document.getElementById("wizJugadorNombre").addEventListener("keydown", (e) => {
         if (e.key === "Enter") wizAddJugador();
+      });
+      document.getElementById("nuevoJugadorNombre").addEventListener("keydown", (e) => {
+        if (e.key === "Enter") addJugadorTab();
       });
 
       // Si ya tenía una URL guardada, la mostramos

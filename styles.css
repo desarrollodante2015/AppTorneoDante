@@ -1,5 +1,5 @@
-/* =========================
-   Torneo de Dante — Tema Galaxia Minimal
+﻿/* =========================
+   Torneo de Dante â€” Tema Galaxia Minimal
    ========================= */
 
 /* 1) Variables del tema */
@@ -21,7 +21,7 @@
   --radius: 16px;
 }
 
-/* 2) Reset básico y tipografía */
+/* 2) Reset bÃ¡sico y tipografÃ­a */
 * { box-sizing: border-box; }
 html, body { height: 100%; }
 body{
@@ -30,7 +30,7 @@ body{
   font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans", "Helvetica Neue";
   line-height: 1.35;
 
-  /* Fondo galáctico con gradientes */
+  /* Fondo galÃ¡ctico con gradientes */
   background:
     radial-gradient(1200px 800px at 20% 10%, rgba(124,92,255,.22), transparent 55%),
     radial-gradient(900px 700px at 80% 20%, rgba(45,212,191,.18), transparent 55%),
@@ -39,7 +39,7 @@ body{
   overflow-x: hidden;
 }
 
-/* 3) Estrellitas (sin imágenes) */
+/* 3) Estrellitas (sin imÃ¡genes) */
 body::before,
 body::after{
   content:"";
@@ -190,7 +190,7 @@ button:active{
   transform: translateY(1px);
 }
 
-/* Botones “especiales” por ID (sin cambiar HTML) */
+/* Botones â€œespecialesâ€ por ID (sin cambiar HTML) */
 #btnGenerarLiga, #btnGenerarPlayoffs, #btnGuardarResultado, #btnSiguienteRonda{
   border-color: rgba(124,92,255,.40);
   background: linear-gradient(180deg, rgba(124,92,255,.18), rgba(124,92,255,.08));
@@ -491,7 +491,7 @@ tr:hover td{
   color: rgba(255,255,255,.30);
 }
 
-/* Opciones (tarjetas de selección) */
+/* Opciones (tarjetas de selecciÃ³n) */
 .wizard-options {
   display: flex;
   flex-direction: column;
@@ -591,7 +591,7 @@ tr:hover td{
   color: var(--muted);
 }
 
-/* Mensajes de validación del wizard */
+/* Mensajes de validaciÃ³n del wizard */
 .wizard-msg {
   color: var(--danger);
   font-weight: 700;
@@ -600,7 +600,7 @@ tr:hover td{
   min-height: 20px;
 }
 
-/* Navegación del wizard */
+/* NavegaciÃ³n del wizard */
 .wizard-nav {
   display: flex;
   gap: 14px;
@@ -887,178 +887,128 @@ tr:hover td{
   }
 }
 
-body[data-theme="cielo"] {
-  --bg0: #dbeafe;
-  --bg1: #eff6ff;
-  --card: rgba(255,255,255,.75);
-  --card2: rgba(255,255,255,.92);
-  --border: rgba(30,64,175,.10);
-  --text: rgba(15,23,42,.90);
-  --muted: rgba(15,23,42,.50);
-  --accent: #6366f1;
-  --accent2: #0284c7;
-  --danger: #dc2626;
-  --shadow: 0 14px 40px rgba(30,64,175,.08);
-
-  background:
-    radial-gradient(1200px 800px at 20% 30%, rgba(99,102,241,.08), transparent 55%),
-    radial-gradient(900px 700px at 75% 15%, rgba(2,132,199,.10), transparent 55%),
-    radial-gradient(600px 600px at 50% 80%, rgba(255,255,255,.50), transparent 50%),
-    linear-gradient(180deg, #93c5fd, #bfdbfe, #eff6ff);
+/* =================== TABS =================== */
+.tabs {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  background: rgba(255,255,255,.04);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  margin-bottom: 20px;
 }
 
-/* Nubes en vez de estrellas */
-body[data-theme="cielo"]::before {
-  opacity: .5;
-  background-image:
-    radial-gradient(90px 45px at 12% 22%, rgba(255,255,255,.85), transparent),
-    radial-gradient(130px 55px at 42% 12%, rgba(255,255,255,.70), transparent),
-    radial-gradient(110px 50px at 72% 30%, rgba(255,255,255,.75), transparent),
-    radial-gradient(70px 35px at 88% 18%, rgba(255,255,255,.60), transparent),
-    radial-gradient(100px 40px at 28% 45%, rgba(255,255,255,.55), transparent),
-    radial-gradient(80px 40px at 62% 8%, rgba(255,255,255,.65), transparent);
-  filter: blur(12px);
+.tab {
+  flex: 1;
+  padding: 12px 8px;
+  font-size: 13px;
+  font-weight: 700;
+  border: none;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all .2s ease;
 }
 
-body[data-theme="cielo"]::after {
-  opacity: .35;
-  background-image:
-    radial-gradient(160px 65px at 22% 65%, rgba(255,255,255,.7), transparent),
-    radial-gradient(120px 50px at 68% 72%, rgba(255,255,255,.6), transparent),
-    radial-gradient(100px 45px at 45% 85%, rgba(255,255,255,.5), transparent);
-  filter: blur(18px);
+.tab:hover {
+  color: var(--text);
+  background: rgba(255,255,255,.06);
 }
 
-/* Inputs y selects - modo cielo */
-body[data-theme="cielo"] input,
-body[data-theme="cielo"] select {
-  border-color: rgba(30,64,175,.14);
-  background: rgba(255,255,255,.85);
+.tab.active {
+  color: var(--text);
+  background: rgba(124,92,255,.15);
+  box-shadow: 0 2px 12px rgba(124,92,255,.12);
 }
 
-body[data-theme="cielo"] input:focus,
-body[data-theme="cielo"] select:focus {
-  border-color: rgba(99,102,241,.50);
-  background: rgba(255,255,255,.95);
+.tab-panel {
+  display: none;
+  animation: tabFadeIn .3s ease;
 }
 
-/* Botones - modo cielo */
-body[data-theme="cielo"] button {
-  border-color: rgba(30,64,175,.14);
-  background: rgba(255,255,255,.55);
+.tab-panel.active {
+  display: block;
 }
 
-body[data-theme="cielo"] button:hover {
-  background: rgba(255,255,255,.75);
+@keyframes tabFadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-body[data-theme="cielo"] #btnGenerarLiga,
-body[data-theme="cielo"] #btnGenerarPlayoffs,
-body[data-theme="cielo"] #btnGuardarResultado,
-body[data-theme="cielo"] #btnSiguienteRonda {
-  border-color: rgba(99,102,241,.35);
-  background: linear-gradient(180deg, rgba(99,102,241,.12), rgba(99,102,241,.05));
+/* =================== EMPTY STATES =================== */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 60px 20px;
+  background: linear-gradient(180deg, var(--card2), var(--card));
+  border: 1px solid var(--border);
+  border-radius: 20px;
 }
 
-body[data-theme="cielo"] #btnBorrarEquipos,
-body[data-theme="cielo"] #btnBorrarLiga,
-body[data-theme="cielo"] #btnBorrarPlayoffs,
-body[data-theme="cielo"] #btnResetTotal {
-  border-color: rgba(220,38,38,.30);
-  background: linear-gradient(180deg, rgba(220,38,38,.08), rgba(220,38,38,.03));
+.empty-icon {
+  font-size: 56px;
+  margin-bottom: 16px;
+  opacity: .7;
 }
 
-/* Badges - modo cielo */
-body[data-theme="cielo"] .badge {
-  border-color: rgba(30,64,175,.12);
-  background: rgba(255,255,255,.70);
+.empty-state h3 {
+  margin: 0 0 8px;
+  font-size: 20px;
 }
 
-/* Partidos - modo cielo */
-body[data-theme="cielo"] .partido {
-  border-color: rgba(30,64,175,.10);
-  background: rgba(255,255,255,.50);
+.empty-state p {
+  margin: 0;
+  max-width: 300px;
 }
 
-/* Tablas - modo cielo */
-body[data-theme="cielo"] th {
-  background: rgba(99,102,241,.06);
-  color: rgba(15,23,42,.60);
+/* =================== MANAGEMENT BUTTON =================== */
+.btn-gestion {
+  display: block;
+  width: 100%;
+  margin-top: 16px;
+  padding: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  text-align: center;
+  border: 1px dashed rgba(255,255,255,.15);
+  border-radius: 14px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all .2s ease;
 }
 
-body[data-theme="cielo"] th,
-body[data-theme="cielo"] td {
-  border-bottom-color: rgba(30,64,175,.08);
+.btn-gestion:hover {
+  border-color: rgba(255,255,255,.25);
+  background: rgba(255,255,255,.04);
+  color: var(--text);
 }
 
-/* Chip - modo cielo */
-body[data-theme="cielo"] .chip {
-  border-color: rgba(30,64,175,.12);
-  background: rgba(255,255,255,.60);
-  color: rgba(15,23,42,.80);
+/* =================== CHIP VARIANTS =================== */
+.chip-danger {
+  border-color: rgba(239,68,68,.30) !important;
+  color: rgba(239,68,68,.85) !important;
 }
 
-/* Card connection - modo cielo */
-body[data-theme="cielo"] .card-connection {
-  border-color: rgba(2,132,199,.20);
-  background: linear-gradient(180deg, rgba(2,132,199,.06), rgba(2,132,199,.02));
+.chip-danger:hover {
+  background: rgba(239,68,68,.10) !important;
 }
 
-body[data-theme="cielo"] .btn-sync {
-  border-color: rgba(2,132,199,.30) !important;
-  background: linear-gradient(180deg, rgba(2,132,199,.10), rgba(2,132,199,.04)) !important;
+/* =================== UTILITIES =================== */
+.oculto {
+  display: none !important;
 }
 
-/* Wizard - modo cielo */
-body[data-theme="cielo"] #wizard {
-  background:
-    radial-gradient(1200px 800px at 20% 30%, rgba(99,102,241,.08), transparent 55%),
-    radial-gradient(900px 700px at 75% 15%, rgba(2,132,199,.10), transparent 55%),
-    linear-gradient(180deg, #93c5fd, #bfdbfe, #eff6ff);
-}
+@media (max-width: 640px) {
+  .tabs {
+    flex-wrap: wrap;
+  }
 
-body[data-theme="cielo"] #wizard::before {
-  opacity: .5;
-  background-image:
-    radial-gradient(90px 45px at 12% 22%, rgba(255,255,255,.85), transparent),
-    radial-gradient(130px 55px at 42% 12%, rgba(255,255,255,.70), transparent),
-    radial-gradient(110px 50px at 72% 30%, rgba(255,255,255,.75), transparent),
-    radial-gradient(70px 35px at 88% 18%, rgba(255,255,255,.60), transparent);
-  filter: blur(12px);
-}
-
-body[data-theme="cielo"] #wizard::after {
-  opacity: .35;
-  background-image:
-    radial-gradient(160px 65px at 22% 65%, rgba(255,255,255,.7), transparent),
-    radial-gradient(120px 50px at 68% 72%, rgba(255,255,255,.6), transparent);
-  filter: blur(18px);
-}
-
-body[data-theme="cielo"] .wizard-option {
-  border-color: rgba(30,64,175,.10);
-  background: rgba(255,255,255,.50);
-}
-
-body[data-theme="cielo"] .wizard-option:hover {
-  border-color: rgba(99,102,241,.30);
-  background: rgba(99,102,241,.06);
-}
-
-body[data-theme="cielo"] .wizard-option.selected {
-  border-color: var(--accent);
-  background: rgba(99,102,241,.10);
-  box-shadow: 0 0 24px rgba(99,102,241,.10);
-}
-
-body[data-theme="cielo"] .wizard-player-field {
-  background: rgba(255,255,255,.50);
-  border-color: rgba(30,64,175,.10);
-}
-
-body[data-theme="cielo"] .wizard-title {
-  background: linear-gradient(135deg, #1e3a5f, var(--accent2));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  .tab {
+    font-size: 12px;
+    padding: 10px 6px;
+  }
 }
