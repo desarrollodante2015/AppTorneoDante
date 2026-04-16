@@ -213,23 +213,29 @@
         <div class="muted" id="subtituloTorneo"></div>
       </div>
       <div style="display:flex;gap:8px;align-items:center;">
-        <button class="chip" onclick="document.getElementById('panelSync').classList.toggle('oculto')">☁️ Sync</button>
+        <button class="chip chip-sync" id="btnSyncIndicator" onclick="document.getElementById('panelSync').classList.toggle('oculto')" title="Estado de sincronización">
+          <span class="sync-dot" id="syncDot"></span>
+          <span id="syncLabel">☁️ Sync</span>
+        </button>
         <button class="chip chip-danger" id="btnResetTotal" title="Borra TODO lo guardado">🗑️ Reset</button>
       </div>
     </header>
 
     <!-- Panel sync colapsable -->
     <div id="panelSync" class="card card-connection oculto">
-      <div class="muted">Conectá con Google Sheets para guardar en la nube</div>
-      <div class="fila" style="margin-top:10px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div class="sync-panel-title">☁️ Sincronización con Google Sheets</div>
+        <span id="syncStatusBadge" class="sync-badge">Desconectado</span>
+      </div>
+      <div class="muted" style="margin-top:6px;">Los datos se guardan automáticamente en la nube cada vez que hacés un cambio.</div>
+      <div class="fila" style="margin-top:14px;">
         <label for="urlScript">URL del Script:</label>
         <input id="urlScript" type="text" placeholder="Pegá acá la URL del Google Apps Script..." />
-        <button id="btnGuardarUrl">💾 Guardar URL</button>
+        <button id="btnGuardarUrl">💾 Conectar</button>
       </div>
       <div class="fila" style="margin-top:10px;">
         <button id="btnCargarDesdeSheets" class="btn-sync">📥 Cargar desde Sheets</button>
-        <button id="btnGuardarEnSheets" class="btn-sync">📤 Guardar en Sheets</button>
-        <span id="syncStatus" class="sync-status"></span>
+        <button id="btnGuardarEnSheets" class="btn-sync">📤 Forzar guardado</button>
       </div>
       <div id="msgSync" style="margin-top:10px;"></div>
     </div>
@@ -387,13 +393,17 @@
       function loadState() {
         const raw = localStorage.getItem(KEY_STORAGE);
         if (!raw) {
-          return { equipos: [], partidos: [] };
+          return { equipos: [], partidos: [], jugadores: [], config: null };
         }
-        return JSON.parse(raw);
+        const parsed = JSON.parse(raw);
+        if (!parsed.jugadores) parsed.jugadores = [];
+        return parsed;
       }
 
       function saveState(s) {
         localStorage.setItem(KEY_STORAGE, JSON.stringify(s));
+        // Auto-sync a Google Sheets
+        autoSyncToSheets();
       }
 
       let state = loadState();
@@ -908,30 +918,107 @@
         renderAll();
       }
 
-      // -------------------- Google Sheets Sync --------------------
+      // -------------------- Google Sheets Sync (Auto) --------------------
       const KEY_SCRIPT_URL = "torneo_dante_script_url";
+      let syncTimer = null;
+      let syncInProgress = false;
+      let syncPendiente = false;
+      const SYNC_DEBOUNCE_MS = 2000; // 2 segundos de espera
 
       function getScriptUrl() {
         return localStorage.getItem(KEY_SCRIPT_URL) || "";
       }
 
-      function setSyncStatus(texto, tipo) {
-        const el = document.getElementById("syncStatus");
-        el.textContent = texto;
-        el.className = "sync-status" + (tipo ? " " + tipo : "");
+      // --- Indicador visual de sync ---
+      function setSyncIndicator(estado) {
+        // estado: 'ok' | 'syncing' | 'error' | 'offline' | 'disconnected'
+        const dot = document.getElementById('syncDot');
+        const label = document.getElementById('syncLabel');
+        const badge = document.getElementById('syncStatusBadge');
+        if (!dot) return;
+
+        dot.className = 'sync-dot sync-dot--' + estado;
+
+        const textos = {
+          ok: { label: '✅ Sync', badge: 'Sincronizado', badgeClass: 'sync-badge sync-badge--ok' },
+          syncing: { label: '⏳ Sync...', badge: 'Guardando...', badgeClass: 'sync-badge sync-badge--syncing' },
+          error: { label: '⚠️ Error', badge: 'Error', badgeClass: 'sync-badge sync-badge--error' },
+          offline: { label: '📴 Offline', badge: 'Sin conexión', badgeClass: 'sync-badge sync-badge--offline' },
+          disconnected: { label: '☁️ Sync', badge: 'Desconectado', badgeClass: 'sync-badge sync-badge--disconnected' }
+        };
+
+        const t = textos[estado] || textos.disconnected;
+        label.textContent = t.label;
+        if (badge) {
+          badge.textContent = t.badge;
+          badge.className = t.badgeClass;
+        }
       }
 
-      function onGuardarUrl() {
-        const url = document.getElementById("urlScript").value.trim();
-        if (!url) {
-          setMsg("msgSync", "error", "Pegá la URL del script.");
+      // --- Auto-sync con debounce ---
+      function autoSyncToSheets() {
+        const url = getScriptUrl();
+        if (!url) return; // No hay URL configurada, no sincronizar
+
+        // Cancelar timer anterior
+        if (syncTimer) clearTimeout(syncTimer);
+
+        // Esperar 2 segundos antes de sincronizar
+        syncTimer = setTimeout(() => {
+          ejecutarSync();
+        }, SYNC_DEBOUNCE_MS);
+      }
+
+      async function ejecutarSync() {
+        const url = getScriptUrl();
+        if (!url) return;
+
+        // Si ya hay un sync en progreso, marcar como pendiente
+        if (syncInProgress) {
+          syncPendiente = true;
           return;
         }
-        localStorage.setItem(KEY_SCRIPT_URL, url);
-        setMsg("msgSync", "ok", "URL guardada ✅ Ahora podés cargar o guardar datos.");
-        setSyncStatus("🔗 Conectado", "ok");
+
+        syncInProgress = true;
+        setSyncIndicator('syncing');
+
+        try {
+          const response = await fetch(url, {
+            method: "POST",
+            body: JSON.stringify({
+              action: "guardar",
+              config: state.config,
+              equipos: state.equipos || [],
+              partidos: state.partidos || [],
+              jugadores: state.jugadores || []
+            })
+          });
+
+          const data = await response.json();
+
+          if (data.ok) {
+            setSyncIndicator('ok');
+          } else {
+            throw new Error(data.error || 'Error al guardar');
+          }
+        } catch (err) {
+          console.warn('Sync error:', err.message);
+          if (!navigator.onLine) {
+            setSyncIndicator('offline');
+          } else {
+            setSyncIndicator('error');
+          }
+        } finally {
+          syncInProgress = false;
+          // Si quedó algo pendiente, sincronizar de nuevo
+          if (syncPendiente) {
+            syncPendiente = false;
+            setTimeout(() => ejecutarSync(), 500);
+          }
+        }
       }
 
+      // --- Cargar datos desde Sheets ---
       async function cargarDesdeSheets() {
         const url = getScriptUrl();
         if (!url) {
@@ -940,23 +1027,46 @@
         }
 
         try {
-          setSyncStatus("⏳ Cargando...", "loading");
+          setSyncIndicator('syncing');
+          setMsg("msgSync", "ok", "Cargando datos...");
+
           const response = await fetch(url + "?action=leer");
           const data = await response.json();
 
+          // Actualizar state con los datos de Sheets
+          if (data.config) state.config = data.config;
           state.equipos = data.equipos || [];
           state.partidos = data.partidos || [];
-          saveState(state);
+          state.jugadores = data.jugadores || [];
 
-          setSyncStatus("✅ Cargado", "ok");
+          // Guardar en LocalStorage (sin trigger auto-sync)
+          localStorage.setItem(KEY_STORAGE, JSON.stringify(state));
+
+          setSyncIndicator('ok');
           setMsg("msgSync", "ok", "¡Datos cargados desde Google Sheets!");
+
+          // Re-renderizar todo
+          if (state.config && state.config.nombre) {
+            document.getElementById('tituloTorneo').textContent = state.config.nombre;
+            document.getElementById('subtituloTorneo').textContent = 
+              `${state.config.formato} • ${state.config.modalidad === 'idayvuelta' ? 'Ida y vuelta' : 'Solo ida'}`;
+            aplicarFormatoSecciones();
+          }
+          actualizarEmptyStates();
           renderAll();
         } catch (err) {
-          setSyncStatus("❌ Error", "error");
-          setMsg("msgSync", "error", "Error al cargar: " + err.message);
+          console.warn('Error al cargar desde Sheets:', err.message);
+          if (!navigator.onLine) {
+            setSyncIndicator('offline');
+            setMsg("msgSync", "error", "Sin conexión a internet. Los datos se cargarán cuando vuelva.");
+          } else {
+            setSyncIndicator('error');
+            setMsg("msgSync", "error", "Error al cargar: " + err.message);
+          }
         }
       }
 
+      // --- Guardar manualmente (forzar) ---
       async function guardarEnSheets() {
         const url = getScriptUrl();
         if (!url) {
@@ -964,29 +1074,107 @@
           return;
         }
 
+        setSyncIndicator('syncing');
+        setMsg("msgSync", "ok", "Guardando...");
+
         try {
-          setSyncStatus("⏳ Guardando...", "loading");
           const response = await fetch(url, {
             method: "POST",
             body: JSON.stringify({
               action: "guardar",
-              equipos: state.equipos,
-              partidos: state.partidos
+              config: state.config,
+              equipos: state.equipos || [],
+              partidos: state.partidos || [],
+              jugadores: state.jugadores || []
             })
           });
           const data = await response.json();
 
           if (data.ok) {
-            setSyncStatus("✅ Guardado", "ok");
+            setSyncIndicator('ok');
             setMsg("msgSync", "ok", "¡Datos guardados en Google Sheets!");
           } else {
             throw new Error(data.error || "Error desconocido");
           }
         } catch (err) {
-          setSyncStatus("❌ Error", "error");
+          if (!navigator.onLine) {
+            setSyncIndicator('offline');
+          } else {
+            setSyncIndicator('error');
+          }
           setMsg("msgSync", "error", "Error al guardar: " + err.message);
         }
       }
+
+      // --- Guardar URL y conectar ---
+      function onGuardarUrl() {
+        const url = document.getElementById("urlScript").value.trim();
+        if (!url) {
+          setMsg("msgSync", "error", "Pegá la URL del script.");
+          return;
+        }
+        localStorage.setItem(KEY_SCRIPT_URL, url);
+        setMsg("msgSync", "ok", "¡Conectado! Los datos se sincronizan automáticamente.");
+        setSyncIndicator('ok');
+
+        // Intentar cargar datos existentes
+        cargarDesdeSheets();
+      }
+
+      // --- Auto-cargar al abrir (si hay URL) ---
+      async function autoCargarDesdeSheets() {
+        const url = getScriptUrl();
+        if (!url) {
+          setSyncIndicator('disconnected');
+          return;
+        }
+
+        try {
+          setSyncIndicator('syncing');
+          const response = await fetch(url + "?action=leer");
+          const data = await response.json();
+
+          // Solo actualizar si Sheets tiene datos
+          const sheetsHasData = (data.config && data.config.nombre) || 
+                               (data.equipos && data.equipos.length > 0) ||
+                               (data.partidos && data.partidos.length > 0);
+
+          if (sheetsHasData) {
+            if (data.config) state.config = data.config;
+            if (data.equipos) state.equipos = data.equipos;
+            if (data.partidos) state.partidos = data.partidos;
+            if (data.jugadores) state.jugadores = data.jugadores;
+            localStorage.setItem(KEY_STORAGE, JSON.stringify(state));
+          }
+
+          setSyncIndicator('ok');
+
+          // Re-renderizar
+          checkWizardOrApp();
+          renderAll();
+        } catch (err) {
+          console.warn('Auto-carga falló (usando LocalStorage):', err.message);
+          if (!navigator.onLine) {
+            setSyncIndicator('offline');
+          } else {
+            setSyncIndicator('error');
+          }
+        }
+      }
+
+      // --- Detectar cambios de conexión ---
+      window.addEventListener('online', () => {
+        const url = getScriptUrl();
+        if (url) {
+          setSyncIndicator('ok');
+          // Sincronizar datos pendientes
+          ejecutarSync();
+        }
+      });
+
+      window.addEventListener('offline', () => {
+        setSyncIndicator('offline');
+      });
 
       // -------------------- Wizard --------------------
       let currentStep = 0;
@@ -1500,6 +1688,12 @@
           document.getElementById('subtituloTorneo').textContent = `${state.config.formato} • ${state.config.modalidad === 'idayvuelta' ? 'Ida y vuelta' : 'Solo ida'}`;
           aplicarFormatoSecciones();
           actualizarEmptyStates();
+
+          // Mostrar la URL de script si está guardada
+          const savedUrl = getScriptUrl();
+          if (savedUrl) {
+            document.getElementById('urlScript').value = savedUrl;
+          }
         } else {
           document.getElementById('wizard').style.display = 'flex';
           document.getElementById('mainApp').style.display = 'none';
@@ -1551,12 +1745,14 @@
       const savedUrl = getScriptUrl();
       if (savedUrl) {
         document.getElementById("urlScript").value = savedUrl;
-        setSyncStatus("🔗 Conectado", "ok");
       }
 
       // Decidir si mostrar wizard o app
       checkWizardOrApp();
       renderAll();
+
+      // Auto-cargar desde Sheets al abrir (si hay URL configurada)
+      autoCargarDesdeSheets();
     </script>
 
   </div>
